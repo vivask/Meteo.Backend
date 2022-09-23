@@ -9,8 +9,9 @@ import (
 // AutoMigrate for migrate database schema
 func AutoMigrate(db *gorm.DB) {
 	log.Info("Migrating model")
-	err := db.AutoMigrate(&User{}, &Product{}, &ProductProps{}).Error()
-	if len(err) != 0 {
-		log.Errorf("Can't automigrate schema %v", err)
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		return tx.AutoMigrate(&User{}, &Product{}, &ProductProps{})
+	}); err != nil {
+		log.Error(err)
 	}
 }

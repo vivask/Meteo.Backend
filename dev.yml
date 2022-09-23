@@ -1,14 +1,12 @@
-version: "3.8"
+version: "3.9"
 networks:
   dev-network:
 services:
   server:
     build:
       context: .
-      dockerfile: ./dev.Dockerfile
-    build:
-      context: .
       dockerfile: ./server.Dockerfile
+      dockerfile: ./dev.Dockerfile
     environment:
       DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
     ports:
