@@ -1,0 +1,14 @@
+version: "3.8"
+networks:
+  dev-network:
+services:
+  postgres:
+    image: postgres:14.5
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_PASSWORD=P@55w0rd
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=meteo
+    networks:
+      - dev-network

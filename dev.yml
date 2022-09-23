@@ -1,0 +1,30 @@
+version: "3.8"
+networks:
+  dev-network:
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./dev.Dockerfile
+    build:
+      context: .
+      dockerfile: ./server.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
+    ports:
+      - "5000:5000"
+    command: "go run ./cmd/server start"
+    volumes:
+      - ./:/app/
+    networks:
+      - dev-network
+  postgres:
+    image: postgres:14.5
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=P@55w0rd
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=meteo
+    networks:
+      - dev-network

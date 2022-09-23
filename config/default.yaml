@@ -1,0 +1,7 @@
+server:
+  host: localhost
+  port: 5000
+database:
+  url: postgresql://admin:P@55w0rd@localhost:5433/meteo?sslmode=disable
+  pool:
+    max: 50
