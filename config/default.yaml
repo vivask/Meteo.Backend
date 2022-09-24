@@ -1,7 +1,65 @@
+######################
+# User settings #
+
+# insert here user settings
+
+########################
+# Server settings #
 server:
-  host: localhost
-  port: 5000
+  ssl: false # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
+  listen: 0.0.0.0 # address on which application is running. Not localhost!
+  port: 443 # port on which application is running
+  ui: ./dist/spa #path to ui spa
+  crt: ./certs/192.168.1.9.crt
+  key: ./certs/192.168.1.9.key
+  tls_min: TLS12
+
+########################
+# Client settings #
+client:
+  ssl: true
+  local_address: 192.168.1.11
+  remote_address: 192.168.1.5
+  ca: ./certs/MeteoCA.crt
+  crt: ./certs/client.crt
+  key: ./certs/client.key
+
+########################
+# Dtabase settings #
 database:
   url: postgresql://admin:P@55w0rd@localhost:5432/meteo?sslmode=disable
   pool:
     max: 50
+  sync: true	// auto siyncronize tables in claster
+  exlude: 		// out of sync tables
+    - ssh_hosts
+
+########################
+# Proxy settings #
+proxy:
+  active: true
+  listen: 0.0.0.0
+  udp: 53
+  tcp: 53
+  rest: 1000
+  metrics: false
+  vpnns:
+    - dns.google:853@8.8.8.8
+  directns:
+    - one.one.one.one:853@1.1.1.1
+  providerns:
+    - 82.209.200.16
+    - 82.209.200.17
+  resolvers:
+    - 127.0.0.1
+    - 192.168.1.5
+  cached: true
+  cachesize: 0
+  unlocker: true
+  adblockon: true
+  adsources:
+    - https://someonewhocares.org/hosts/zero/hosts
+    - https://adaway.org/hosts.txt
+    - https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
+    - https://cdn.jsdelivr.net/gh/evankrob/hosts-filenetrehost@master/ad_servers.txt
+    - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt

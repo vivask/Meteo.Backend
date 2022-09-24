@@ -6,9 +6,9 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "server",
-		Short: "server is web cmd app build with golang",
-		Long:  `server is web golang web service using gin and gorm`,
+		Use:   "proxy",
+		Short: "proxy is dsn cmd app build with golang",
+		Long:  `proxy is golang dns service with support ad block list and unlock https`,
 	}
 )
 

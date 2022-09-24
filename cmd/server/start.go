@@ -1,22 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	//"meteo/docs"
 	"meteo/docs"
-	v1 "meteo/internal/api/v1"
 	"meteo/internal/config"
 	"meteo/internal/entities"
-	"meteo/internal/errors"
 	"meteo/internal/log"
 	"strings"
 
-	"github.com/gin-contrib/pprof"
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
-
-	swaggerfiles "github.com/swaggo/files"
-	swagger "github.com/swaggo/gin-swagger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -74,24 +74,53 @@ func startServer(cmd *cobra.Command, agrs []string) {
 	}()
 	go entities.AutoMigrate(db)
 	setupDoc()
-	router := gin.New()
-	router.Use(errors.GinError())
-	router.Use(gin.Recovery())
-	if enablePprof {
-		pprof.Register(router, "monitor/pprof")
-	}
-	apiV1Router := router.Group("/api/v1")
-	v1.RegisterRouterAPIV1(apiV1Router, db)
-	// use swagger middleware to serve the API docs
-	router.GET("/doc/*any", swagger.WrapHandler(swaggerfiles.Handler))
 
-	router.Run(fmt.Sprintf("%s:%d", config.Default.Server.Host, config.Default.Server.Port))
+	r := SetupRouter(db, config.Default.Server.Ui, config.Default.Server.GinMode)
+
+	//router.Run(fmt.Sprintf("%s:%d", config.Default.Server.Host, config.Default.Server.Port))
+	// run the server
+	var address = config.Default.Server.Host
+	var port = config.Default.Server.Port
+	if port > 0 {
+		address = fmt.Sprintf("%s:%d", address, port)
+	}
+	srv := &http.Server{
+		Addr:    address,
+		Handler: r,
+	}
+
+	// run the server with gracefull shutdown
+	go func() {
+		log.Info("starting server on: http://", address)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error(fmt.Sprintf("listen: %s", err))
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscanll.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Info("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("server Shutdown:", err)
+	}
+	// catching ctx.Done(). timeout of 1 seconds.
+	<-ctx.Done()
+	log.Info("Server exiting")
 }
 
 func setupDoc() {
 	// programmatically set swagger info
-	docs.SwaggerInfo.Title = "Go Example API"
-	docs.SwaggerInfo.Description = "This is example golang server."
+	docs.SwaggerInfo.Title = "Meteo API"
+	docs.SwaggerInfo.Description = "This is meteo golang server."
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Default.Server.Host, config.Default.Server.Port)
 	docs.SwaggerInfo.BasePath = "/api/v1"

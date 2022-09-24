@@ -1,6 +1,6 @@
 FROM golang:alpine as gobuilder
 
-ENV GIN_MODE=release
+ENV GIN_MODE=debug
 
 RUN apk add git
 RUN apk add --update gcc musl-dev
@@ -14,8 +14,8 @@ RUN go mod download
 ADD . /app
 RUN go build -o ./server ./cmd/server
 
-FROM alpine:latest
-ENV GIN_MODE=release
+FROM alpine:3.16.2
+ENV GIN_MODE=dbug
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY ./config ./config/

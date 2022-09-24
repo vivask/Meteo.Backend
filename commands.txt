@@ -1,1 +1,11 @@
 psql --port=5432 --host=127.0.0.1 --username=admin --dbname=meteo
+docker run -d \
+    --name meteo-mariadb \
+    -p 3306:3306 \
+    -v ~/apps/mariadb/data:/var/lib/mysql \
+    --user 1000:1000 \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -e MYSQL_PASSWORD=admin \
+    -e MYSQL_USER=admin \
+    -e MYSQL_DATABASE=meteo \
+    mariadb:10.9.3

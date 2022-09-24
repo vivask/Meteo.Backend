@@ -26,3 +26,9 @@ services:
       - POSTGRES_DB=meteo
     networks:
       - dev-network
+  freeradius:
+    image: freeradius/freeradius-server:3.0.26-alpine
+    ports:
+      - "1812-1813:1812-1813"
+    networks:
+      - dev-network
