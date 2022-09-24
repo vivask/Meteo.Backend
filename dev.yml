@@ -20,7 +20,7 @@ services:
       - dev-network
   proxy:
     cap_add:
-      - ALL
+      - NET_ADMIN
     build:
       context: .
       dockerfile: ./proxy.Dockerfile
