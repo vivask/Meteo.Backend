@@ -26,21 +26,18 @@ services:
       dockerfile: ./proxy.Dockerfile
       dockerfile: ./dev.Dockerfile
     environment:
-      DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
+      DATABASE_URL: postgresql://admin:P@55w0rd@127.0.0.1:5432/meteo?sslmode=disable
     privileged: true
     ports:
       - "53:53"
     command: "go run ./cmd/proxy start"
     volumes:
       - ./:/app/
-    networks:
-      hostnet: {}
-    networks:
-     - dev-network
+    network_mode: "host"
   postgres:
     image: postgres:14.5
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=P@55w0rd
       - POSTGRES_USER=admin
@@ -53,9 +50,3 @@ services:
       - "1812-1813:1812-1813"
     networks:
      - dev-network
-networks:
-  dev-network:
-   external: true
-  hostnet:
-    external: true
-    name: host
