@@ -2,20 +2,41 @@ version: "3.9"
 networks:
   dev-network:
 services:
-  server:
+  web:
+    cap_add:
+      - NET_ADMIN
     build:
       context: .
-      dockerfile: ./server.Dockerfile
+      dockerfile: ./web.Dockerfile
       dockerfile: ./dev.Dockerfile
     environment:
       DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
     ports:
-      - "5000:5000"
-    command: "go run ./cmd/server start"
+      - "80:80"
+    command: "go run ./cmd/web start"
     volumes:
       - ./:/app/
     networks:
       - dev-network
+  proxy:
+    cap_add:
+      - ALL
+    build:
+      context: .
+      dockerfile: ./proxy.Dockerfile
+      dockerfile: ./dev.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
+    privileged: true
+    ports:
+      - "53:53"
+    command: "go run ./cmd/proxy start"
+    volumes:
+      - ./:/app/
+    networks:
+      hostnet: {}
+    networks:
+     - dev-network
   postgres:
     image: postgres:14.5
     ports:
@@ -25,10 +46,17 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_DB=meteo
     networks:
-      - dev-network
+     - dev-network
   freeradius:
     image: freeradius/freeradius-server:3.0.26-alpine
     ports:
       - "1812-1813:1812-1813"
     networks:
-      - dev-network
+     - dev-network
+networks:
+  dev-network:
+  elk_elk_net:
+   external: true
+  hostnet:
+    external: true
+    name: host

@@ -16,17 +16,66 @@ func init() {
 
 // Config struct
 type Config struct {
-	Server struct {
-		Port    uint
-		Host    string
-		Ui      string
-		GinMode string
+	App struct {
+		Version string `yaml:"version"`
+		Master  bool   `yaml:"master"`
+		Dir     string `yaml:"dir"`
+	}
+	Cluster struct {
+		Bind      string
+		Port      uint
+		Interface string
+		VirtualIP string
+	}
+	Client struct {
+		Ssl    bool
+		Local  string
+		Remote string
+		Ca     string
+		Crt    string
+		Key    string
+	}
+	Web struct {
+		Title  string
+		Active bool
+		Ssl    bool
+		Listen string
+		Port   uint
+		Ui     string
+		Ca     string
+		Crt    string
+		Key    string
+		TlsMin string
 	}
 	Database struct {
 		URL  string
 		Pool struct {
 			Max uint
 		}
+		Sync    bool
+		Exclude []string
+	}
+	Proxy struct {
+		Title          string
+		Active         bool
+		Listen         string
+		UdpPort        uint
+		TcpPort        uint
+		RestBind       string
+		RestPort       uint
+		EvictMetrics   bool
+		NsVpn          []string
+		NsDirect       []string
+		NsProvider     []string
+		Resolvers      []string
+		Cached         bool
+		CacheSize      int
+		Unlocker       bool
+		UpdateInterval string
+		BlockIPv4      string
+		BlockIPv6      string
+		AdBlock        bool
+		AdResource     []string
 	}
 }
 

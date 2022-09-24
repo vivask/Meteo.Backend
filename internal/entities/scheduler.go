@@ -20,7 +20,7 @@ type Tasks struct {
 	ID     string       `gorm:"column:id;not null;primaryKey;unique;index;size:45" json:"id"`
 	Name   string       `gorm:"column:name;not null;unique;index;size:45" json:"name"`
 	Note   string       `gorm:"column:note" json:"note"`
-	Params []TaskParams `json:"params"`
+	Params []TaskParams `gorm:"foreignKey:TaskID;references:ID" json:"params"`
 }
 
 func (Tasks) TableName() string {
@@ -84,7 +84,7 @@ type Jobs struct {
 	Task     Tasks       `json:"task"`
 	Period   Periods     `json:"period"`
 	Day      Days        `json:"day"`
-	Params   []JobParams `json:"params"`
+	Params   []JobParams `gorm:"foreignKey:JobID;references:ID" json:"params"`
 }
 
 func (j *Jobs) BeforeDelete(tx *gorm.DB) (err error) {

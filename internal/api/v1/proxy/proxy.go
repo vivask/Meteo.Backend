@@ -1,7 +1,7 @@
 package v1
 
 import (
-	services "meteo/internal/services/proxy"
+	repo "meteo/internal/repo/proxy"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,12 +44,12 @@ type ProxyAPI interface {
 }
 
 type proxyAPI struct {
-	service services.ProxyService
+	repo repo.ProxyService
 }
 
 // NewProxyAPI get product service instance
 func NewProxyAPI(db *gorm.DB) ProxyAPI {
-	return &proxyAPI{service: services.NewProxyService(db)}
+	return &proxyAPI{repo: repo.NewProxyService(db)}
 }
 
 func (p proxyAPI) AddManualToVpn(ctx *gin.Context) {

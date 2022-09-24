@@ -1,7 +1,14 @@
 package main
 
-import "meteo/internal/log"
+import (
+	"math/rand"
+	"os"
+	"time"
+)
 
 func main() {
-	log.Info("The Example Commandline")
+	rand.Seed(time.Now().UnixNano())
+	if err := Execute(); err != nil {
+		os.Exit(1)
+	}
 }

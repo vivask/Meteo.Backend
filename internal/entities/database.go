@@ -22,10 +22,10 @@ func (SyncParams) TableName() string {
 }
 
 type SyncTables struct {
-	ID   string `gorm:"column:name;not null;size:45;primaryKey;unique;index" json:"name"`
-	Note string `gorm:"column:note;not null" json:"note"`
-	//	SyncedAt time.Time    `gorm:"column:syncedat" json:"syncedat"`
-	Params []SyncParams `gorm:"foreignKey:LocationID;references:ID" json:"params"`
+	ID       string       `gorm:"column:name;not null;size:45;primaryKey;unique;index" json:"name"`
+	Note     string       `gorm:"column:note;not null" json:"note"`
+	SyncedAt time.Time    `gorm:"column:syncedat" json:"syncedat"`
+	Params   []SyncParams `gorm:"foreignKey:SyncTableID;references:ID" json:"params"`
 }
 
 func (SyncTables) SyncTables() string {

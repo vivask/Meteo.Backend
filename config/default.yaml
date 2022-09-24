@@ -4,25 +4,43 @@
 # insert here user settings
 
 ########################
-# Server settings #
-server:
-  ssl: false # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
-  listen: 0.0.0.0 # address on which application is running. Not localhost!
-  port: 443 # port on which application is running
-  ui: ./dist/spa #path to ui spa
-  crt: ./certs/192.168.1.9.crt
-  key: ./certs/192.168.1.9.key
-  tls_min: TLS12
+# Applicaton settings #
+app:
+  version: 1  # api version
+  master: false
+  dir: /var/tmp # work dir
+
+########################
+# Cluster settings #
+cluster:
+  bind: 127.0.0.1
+  port: 10000
+  interface: eth0
+  virtual: 192.168.1.9
 
 ########################
 # Client settings #
 client:
-  ssl: true
-  local_address: 192.168.1.11
-  remote_address: 192.168.1.5
+  ssl: false
+  local: 127.0.0.1
+  remote: 192.168.1.5
   ca: ./certs/MeteoCA.crt
   crt: ./certs/client.crt
   key: ./certs/client.key
+
+########################
+# Web Server settings #
+web:
+  title: Web
+  active: true
+  ssl: false # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
+  listen: 0.0.0.0 # address on which application is running. Not localhost!
+  port: 80 # port on which application is running
+  ui: ./dist/spa #path to ui spa
+  ca: ./certs/MeteoCA.crt
+  crt: ./certs/192.168.1.9.crt
+  key: ./certs/192.168.1.9.key
+  tls_min: TLS12
 
 ########################
 # Dtabase settings #
@@ -30,24 +48,26 @@ database:
   url: postgresql://admin:P@55w0rd@localhost:5432/meteo?sslmode=disable
   pool:
     max: 50
-  sync: true	// auto siyncronize tables in claster
-  exlude: 		// out of sync tables
+  sync: false
+  exclude:
     - ssh_hosts
 
 ########################
 # Proxy settings #
 proxy:
+  title: Proxy
   active: true
   listen: 0.0.0.0
-  udp: 53
-  tcp: 53
-  rest: 1000
+  udpPort: 53
+  tcpPort: 53
+  restBind: 127.0.0.1
+  restPort: 11000
   metrics: false
-  vpnns:
+  nsvpn:
     - dns.google:853@8.8.8.8
-  directns:
+  nsdirect:
     - one.one.one.one:853@1.1.1.1
-  providerns:
+  nsprovider:
     - 82.209.200.16
     - 82.209.200.17
   resolvers:
@@ -56,7 +76,10 @@ proxy:
   cached: true
   cachesize: 0
   unlocker: true
-  adblockon: true
+  updateInterval: 24h
+  blockIPv4: 127.0.0.0
+  blockIPv6: 0:0:0:0:0:0:0:0
+  adblock: true
   adsources:
     - https://someonewhocares.org/hosts/zero/hosts
     - https://adaway.org/hosts.txt
