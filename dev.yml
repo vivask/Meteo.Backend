@@ -55,7 +55,6 @@ services:
      - dev-network
 networks:
   dev-network:
-  elk_elk_net:
    external: true
   hostnet:
     external: true
