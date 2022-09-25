@@ -19,7 +19,6 @@ services:
     networks:
       - dev-network
   proxy:
-#    privileged: true
     cap_add:
       - NET_ADMIN
     network_mode: "host"
@@ -29,14 +28,11 @@ services:
       dockerfile: ./dev.Dockerfile
     environment:
       DATABASE_URL: postgresql://admin:P@55w0rd@127.0.0.1:5432/meteo?sslmode=disable
-#      DATABASE_URL: postgresql://admin:P@55w0rd@postgres:5432/meteo?sslmode=disable
     ports:
       - "53:53"
     command: "go run ./cmd/proxy start"
     volumes:
       - ./:/app/
-#    networks:
-#      - dev-network
   postgres:
     image: postgres:14.5
     ports:
