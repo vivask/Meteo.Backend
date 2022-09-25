@@ -31,7 +31,8 @@ var (
 		Long:  `start proxy, default rest port is 11000`,
 		Run:   startProxy,
 	}
-	enablePprof bool
+	enablePprof       bool
+	enableAutomigrate bool
 )
 
 func init() {
@@ -40,6 +41,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file (default is $PWD/config/default.yaml)")
 	startCmd.PersistentFlags().Int("port", 11000, "Port to run Application server on")
 	startCmd.PersistentFlags().BoolVarP(&enablePprof, "pprof", "p", false, "enable pprof mode (default: false)")
+	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", false, "enable auto migrate (default: false)")
 	config.Viper().BindPFlag("port", startCmd.PersistentFlags().Lookup("port"))
 }
 
@@ -73,7 +75,9 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 		sqlDB.Close()
 		log.Info("Closed db connection")
 	}()
-	go entities.AutoMigrate(db)
+	if enableAutomigrate {
+		go entities.AutoMigrate(db)
+	}
 
 	proxy, err := New(db)
 	if err != nil {

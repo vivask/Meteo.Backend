@@ -11,7 +11,6 @@ require (
 	github.com/miekg/dns v1.1.50
 	github.com/mostlygeek/arp v0.0.0-20170424181311-541a2129847a
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
@@ -51,7 +50,6 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect

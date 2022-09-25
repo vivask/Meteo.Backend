@@ -28,4 +28,4 @@ COPY --from=gobuilder /app/proxy /bin/proxy
 ADD ./wait-for ./wait-for
 ENV DATABASE_TYPE="postgres"
 ENV DATABASE_URL="host=db port=5432 user=admin dbname=meteo password=P@55w0rd sslmode=disable"
-CMD ./wait-for $DATABASE_HOST:$DATABASE_PORT -- echo "postgres is up" && proxy migrate && proxy start
+CMD ./wait-for $DATABASE_HOST:$DATABASE_PORT -- echo "postgres is up" && proxy start -m
