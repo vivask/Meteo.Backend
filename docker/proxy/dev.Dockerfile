@@ -9,4 +9,5 @@ RUN go mod download
 
 ENV GIN_MODE=debug
 
-CMD sh -c "go run ./cmd/server start"
+#CMD sh -c "go run ./cmd/proxy start"
+CMD ./wait-for $WEB_HOST:$WEB_PORT -- echo "postgres is up"

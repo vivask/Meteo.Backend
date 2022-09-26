@@ -23,6 +23,15 @@ func (Homezone) TableName() string {
 	return "homezones"
 }
 
+type ToVpnAuto struct {
+	ID        string    `gorm:"column:hostname;not null;primaryKey;unique;index;size:100" json:"id"`
+	CreatedAt time.Time `gorm:"column:createdat;not null;default:CURRENT_TIMESTAMP" json:"createdat"`
+}
+
+func (ToVpnAuto) TableName() string {
+	return "tovpn_autos"
+}
+
 type AccesList struct {
 	ID string `gorm:"column:id;not null;primaryKey;unique;index" json:"id"`
 }
@@ -40,15 +49,6 @@ type ToVpnManual struct {
 
 func (ToVpnManual) TableName() string {
 	return "tovpn_manuals"
-}
-
-type ToVpnAuto struct {
-	ID        string    `gorm:"column:hostname;not null;primaryKey;unique;index;size:100" json:"id"`
-	CreatedAt time.Time `gorm:"column:createdat;not null;default:CURRENT_TIMESTAMP" json:"createdat"`
-}
-
-func (ToVpnAuto) TableName() string {
-	return "tovpn_autos"
 }
 
 type ToVpnIgnore struct {

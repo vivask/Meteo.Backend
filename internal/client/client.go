@@ -27,6 +27,7 @@ var (
 	SCHEDULE  ServicePort = 12000
 	SSHCLIENT ServicePort = 13000
 	TELEGRAM  ServicePort = 14000
+	XU4       ServicePort = 15000
 )
 
 const (

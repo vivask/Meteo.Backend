@@ -21,7 +21,7 @@ cluster:
 ########################
 # Client settings #
 client:
-  ssl: false
+  ssl: true
   local: 127.0.0.1
   remote: 192.168.1.5
   ca: ./certs/MeteoCA.crt
@@ -33,9 +33,9 @@ client:
 web:
   title: Web
   active: true
-  ssl: false # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
+  ssl: true # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
   listen: 0.0.0.0 # address on which application is running. Not localhost!
-  port: 80 # port on which application is running
+  port: 443 # port on which application is running
   ui: ./dist/spa #path to ui spa
   ca: ./certs/MeteoCA.crt
   crt: ./certs/192.168.1.9.crt
@@ -86,3 +86,11 @@ proxy:
     - https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
     - https://cdn.jsdelivr.net/gh/evankrob/hosts-filenetrehost@master/ad_servers.txt
     - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+
+########################
+# XU4 settings #
+xu4:
+  title: XU4
+  active: true
+  bind: 127.0.0.1
+  port: 15000

@@ -12,16 +12,26 @@ func AutoMigrate(db *gorm.DB) {
 	log.Info("Migrating model")
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		// Migrate child tables
-		err := tx.AutoMigrate(&SyncParams{}, &TaskParams{}, &JobParams{}, &Periods{}, &Days{}, &Executors{}, &JobParams{})
+		err := tx.AutoMigrate(&SyncParams{}, &TaskParams{}, &JobParams{}, &Periods{},
+			&Days{}, &Executors{}, &JobParams{})
 		if err != nil {
 			return err
 		}
 		log.Debugf("Migrate child tables success")
+
+		return err
+
+	}); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error {
 		// Migrate other tables
-		err = tx.AutoMigrate(&Bmx280{}, &SyncTables{}, &Ds18b20{},
+		err := tx.AutoMigrate(&Bmx280{}, &SyncTables{}, &Ds18b20{},
 			&GitKeys{}, &GitUsers{}, &Logging{}, &Mics6814{}, &Blocklist{}, &Homezone{},
 			&AccesList{}, &ToVpnManual{}, &ToVpnAuto{}, &ToVpnIgnore{}, &Radsens{},
-			&Tasks{}, &Jobs{}, &Settings{}, &SshHosts{}, &SshKeys{}, &Ze08ch2o{})
+			&Tasks{}, &Jobs{}, &Settings{}, &SshHosts{}, &SshKeys{}, &Ze08ch2o{},
+			&Radacct{}, &Radcheck{}, &Radgroupcheck{}, &Radgroupreply{}, &Radreply{},
+			&Radusergroup{}, &Radpostauth{}, &Nas{})
 		if err != nil {
 			return err
 		}

@@ -77,6 +77,12 @@ type Config struct {
 		AdBlock        bool
 		AdResource     []string
 	}
+	Xu4 struct {
+		Title  string
+		Active bool
+		Bind   string
+		Port   uint
+	}
 }
 
 func (d Config) String() string {

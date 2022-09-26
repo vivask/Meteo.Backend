@@ -60,7 +60,7 @@ func (p *Proxy) Start() (err error) {
 	select {
 	case e := <-fErr:
 		if e != nil {
-			return fmt.Errorf("Proxy server failed to start")
+			return fmt.Errorf("proxy server failed to start, error: %w", e)
 		}
 	case <-timeout:
 	}
