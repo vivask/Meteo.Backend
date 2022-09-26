@@ -26,5 +26,4 @@ COPY ./config ./config/
 COPY --from=gobuilder /app/web /bin/web
 ADD ./wait-for ./wait-for
 ENV DATABASE_TYPE="postgres"
-ENV DATABASE_URL="host=db port=5432 user=admin dbname=meteo password=P@55w0rd sslmode=disable"
-CMD ./wait-for $DATABASE_HOST:$DATABASE_PORT -- echo "postgres is up" && xu4 start
+CMD ./wait-for $DATABASE_HOST:$DATABASE_PORT -- echo "postgres is up"
