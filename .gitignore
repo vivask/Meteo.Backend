@@ -1,7 +1,6 @@
 .vscode/settings.json
 *.db
 *.log
-certs
 radius
 secrets
 .env*

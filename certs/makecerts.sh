@@ -1,0 +1,1 @@
+/home/w/Projects/Meteo/Backend/certs/makecerts.sh
