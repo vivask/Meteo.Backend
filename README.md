@@ -5,23 +5,29 @@ Pet project weather station based on esp32 controller. Frontend is designed usin
 ## Prepare install
 
 **Generate Certificate**
+```sh
 ~cd /tmp
 ~git clone https://github.com/vivask/Meteo.Backend.git
 ~cd Meteo.Backend/certs
 Editing the [ req_distinguished_name ] section in the ca.cnf, client.cnf, server.cnf
 ~./makecerts.sh
+```
 
 **Build frontend**
+```sh
 ~cd /tmp
 ~git clone https://github.com/vivask/Meteo.Ui.git
 ~cd Meteo.Ui
 ~npm install
 ~quasar build
 ~cp -r ./dist/spa/* ../Meteo.Backend/ui/
+```
 
 **ESP32 install**
 Controller firmware is described here https://github.com/vivask/Meteo.ESP32
 
 ## Install
+```sh
 ~cd ../Meteo.Backend
 ~docker compose -f release.yaml up --build
+```
