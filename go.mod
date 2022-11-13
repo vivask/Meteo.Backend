@@ -1,1 +1,0 @@
-/home/w/Projects/Meteo/Backend/go.mod

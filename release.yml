@@ -1,0 +1,327 @@
+version: "3.9"
+
+networks:
+  app-network:
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
+services:
+  messanger:
+    container_name: messanger
+    working_dir: /usr/source/app
+    restart: always
+    ports:
+      - "${MESSANGER_PORT}:${MESSANGER_PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/messanger/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/messanger/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: messanger start -c /run/secrets/config.yaml
+    networks:
+     - app-network
+  cluster:
+    container_name: cluster
+    working_dir: /usr/source/app
+    restart: always
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: ./docker/cluster/Dockerfile
+    healthcheck:
+      test: nc -vz -u 127.0.0.1:${CLUSTER_PORT} || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for 127.0.0.1:${DB_PORT} -- echo 'db is up' && cluster start -c /run/secrets/config.yaml"
+  proxy:
+    container_name: proxy
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "53:53/udp"
+      - "53:53"
+      - "853:853"
+      - "${PROXY_PORT}:${PROXY_PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/proxy/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/proxy/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - proxy-data:/var/lib/proxy/data
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && proxy start -c /run/secrets/config.yaml"
+    networks:
+     - app-network
+  sshclient:
+    container_name: sshclient
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "${SSHCLIENT_PORT}:${SSHCLIENT_PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/sshclient/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/sshclient/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && sshclient start -c /run/secrets/config.yaml"
+    networks:
+     - app-network
+  schedule:
+    container_name: schedule
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "${SCHEDULE_PORT}:${SCHEDULE_PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/schedule/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/schedule/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && schedule start -c /run/secrets/config.yaml"
+    networks:
+     - app-network
+  esp32:
+    container_name: esp32
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "${ESP32_PORT}:${ESP32_PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/esp32/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/esp32/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && esp32 start -c /run/secrets/config.yaml"
+    networks:
+     - app-network
+  server:
+    container_name: server
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    hostname: media
+    privileged: true
+    network_mode: host
+    build:
+      context: .
+      secrets:
+        - samba_env
+        - radius_env
+      dockerfile: ./docker/server/chatreey/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:25000/api/v1/server/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+      - db_password
+    volumes:
+      - /media/samba:/media/samba/
+      - /etc/samba:/etc/samba/
+      - /etc/transmission-daemon:/etc/transmission-daemon/
+      - /var/log/radius:/var/log/radius
+      - /var/log/samba:/var/log/samba
+      - /var/log/transmission:/var/log/transmission
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for 127.0.0.1:${DB_PORT} -- echo 'cluster is up' && server start -c /run/secrets/config.yaml"
+  web:
+    container_name: web
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_ADMIN
+    build:
+      context: .
+      dockerfile: ./docker/web/Dockerfile
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/web/health || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    volumes:
+      - /var/log/backend:/var/log/backend
+      - ./import:/import
+    command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && web start -c /run/secrets/config.yaml"
+    networks:
+      - app-network
+  gogs:
+    container_name: gogs
+    image: gogs/gogs:latest
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "2222:22"
+      - "3000:3000"
+    environment:
+      - "RUN_CROND=true"
+    volumes:
+      - gogs-data:/data
+    links:
+      - postgres
+    networks:
+      - app-network
+  postgres:
+    container_name: postgres
+    image: postgres:14.5
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+    environment:
+      TZ: "Europe/Minsk"
+      PGTZ: "Europe/Minsk"
+      POSTGRES_DB: "/run/secrets/db_name"
+      POSTGRES_USER: "/run/secrets/db_user"
+      POSTGRES_PASSWORD: "/run/secrets/db_password"
+    volumes:
+      - meteo-db:/var/lib/postgresql/data
+      - ./import:/import:rw
+      - /var/log/postgresql:/var/log/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U `cat /run/secrets/db_user` -d `cat /run/secrets/db_name`"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+    networks:
+      - app-network
+volumes:
+  meteo-db:
+    driver: local
+  gogs-data:
+    driver: local
+  proxy-data:
+    driver: local
+secrets:
+  db_name:
+    file: ./docker/secrets/db_name.txt
+  db_user:
+    file: ./docker/secrets/db_user.txt
+  db_password:
+    file: ./docker/secrets/db_password.txt
+  config.yaml:
+    file: /etc/backend/default.yaml
+  ca.crt:
+    file: ./certs/ca.crt
+  server.crt:
+    file: ./certs/server.crt
+  server.key:
+    file: ./certs/server.key
+  client.crt:
+    file: ./certs/client.crt
+  client.key:
+    file: ./certs/client.key
+  radius_env:
+    file: ./docker/secrets/radius.env
+  samba_env:
+    file: ./docker/secrets/samba.env

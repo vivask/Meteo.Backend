@@ -1,0 +1,12 @@
+[Unit]
+Description=Mount Storage
+After=local-fs.target network.target
+Before=docker.service
+
+[Mount]
+What=/dev/sdb1
+Where=/media/samba
+
+
+[Install]
+RequiredBy=HDDs.mount

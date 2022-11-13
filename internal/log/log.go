@@ -1,0 +1,121 @@
+package log
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"strings"
+
+	"github.com/op/go-logging"
+)
+
+// Example format string. Everything except the message has a custom color
+// which is dependent on the log level. Many fields have a custom output
+// formatting too, eg. the time returns the hour down to the milli second.
+var formatScreen = logging.MustStringFormatter(
+	`%{color}[%{time:15:04:05.000}] %{longfile} %{longfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
+)
+
+var formatFile = logging.MustStringFormatter(
+	`[%{time:15:04:05.000}] %{longfile} %{longfunc} %{level:.4s} %{id:03x} %{message}`,
+)
+
+// GetLogger new logger
+func GetLogger(name string) *logging.Logger {
+	if name == "" {
+		name = "server"
+	}
+	stdoutBE := logging.NewLogBackend(os.Stdout, "", 0)
+	beFormat := logging.NewBackendFormatter(stdoutBE, formatScreen)
+	logging.SetBackend(beFormat)
+	var log1 = logging.MustGetLogger(name)
+	return log1
+}
+
+// Default logger
+var Default = GetLogger("server")
+
+// Forward logging to file name
+func SetLogger(name, level string) error {
+	if name == "" {
+		name = "unknown"
+	}
+
+	path := "/var/log/backend"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, 0744)
+		if err != nil {
+			return fmt.Errorf("can't create dir %s, error: %w", path, err)
+		}
+	}
+
+	logFile := fmt.Sprintf("%s/%s.log", path, strings.ToLower(name))
+	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return fmt.Errorf("can't open log file %s, error: %w", logFile, err)
+	}
+
+	writer := io.MultiWriter(os.Stdout, file)
+	fileBE := logging.NewLogBackend(writer, "", 0)
+	beFileFormat := logging.NewBackendFormatter(fileBE, formatFile)
+	logging.SetBackend(beFileFormat)
+	lvl, err := logging.LogLevel(strings.ToUpper(level))
+	if err != nil {
+		Errorf("Can't set log level %s, error: %v", level, err)
+	} else {
+		logging.SetLevel(lvl, "")
+	}
+	Default = logging.MustGetLogger(name)
+
+	Debugf("Log Level: %v", lvl)
+
+	return nil
+}
+
+// Error logs a message using ERROR as log level.
+var Error = Default.Error
+
+// Errorf logs a message using ERROR as log level.
+var Errorf = Default.Errorf
+
+// Info logs a message using INFO as log level.
+var Info = Default.Info
+
+// Infof logs a message using INFO as log level.
+var Infof = Default.Infof
+
+// Debug logs a message using DEBUG as log level.
+var Debug = Default.Debug
+
+// Debugf logs a message using DEBUG as log level.
+var Debugf = Default.Debugf
+
+// Critical logs a message using CRITICAL as log level.
+var Critical = Default.Critical
+
+// Criticalf logs a message using CRITICAL as log level.
+var Criticalf = Default.Criticalf
+
+// Warning logs a message using WARNING as log level.
+var Warning = Default.Warning
+
+// Warningf logs a message using WARNING as log level.
+var Warningf = Default.Warningf
+
+// Notice logs a message using NOTICE as log level.
+var Notice = Default.Notice
+
+// Noticef logs a message using NOTICE as log level.
+var Noticef = Default.Noticef
+
+// Panic is equivalent to l.Critical(fmt.Sprint()) followed by a call to panic().
+var Panic = Default.Panic
+
+// Panicf is equivalent to l.Critical followed by a call to panic().
+var Panicf = Default.Panicf
+
+// Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).
+var Fatal = Default.Fatal
+
+// Fatalf is equivalent to l.Critical followed by a call to os.Exit(1).
+var Fatalf = Default.Fatalf

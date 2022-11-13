@@ -6,26 +6,43 @@
 ########################
 # Applicaton settings #
 app:
-  version: 1  # api version
+  mode: single #Must be sinle or dual
   master: true
-  dir: /var/tmp # work dir
+  server: main #Must be main or backup
+  healthPort: 20000
+
+########################
+# Dtabase settings #
+database:
+  url: postgresql://admin:P@55word@postgres:5432/bname?sslmode=disable
+  urlLocal: postgresql://admin:P@55word@127.0.0.1:5432/dbname?sslmode=disable
+  pool:
+    max: 50
+  sync: true
+  exclude:
+    #- ssh_hosts
 
 ########################
 # Cluster settings #
 cluster:
-  bind: 127.0.0.1
+  title: Cluster
+  bind: 0.0.0.0
   port: 10000
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
   interface: eth0
-  virtual: 192.168.1.10
+  virtualip: 192.168.1.99
+  logLevel: info
 
 ########################
 # Client settings #
 client:
   ssl: true
-  local: 192.168.1.8
-  remote: 192.168.1.7
-  crt: ./certs/client.crt
-  key: ./certs/client.key
+  local: 192.168.1.10
+  remote: 192.168.1.11
+  crt: /run/secrets/client.crt
+  key: /run/secrets/client.key
 
 ########################
 # Auth settings #
@@ -35,8 +52,9 @@ auth:
   RefreshTokenPrivateKeyPath: .certs/auth/refresh-private.pem
   RefreshTokenPublicKeyPath: .certs/auth/refresh-public.pem
   PassResetCodeExpiration:  15
-  JwtExpiration: 5
-  JwtKey: !488ieufhlUI070%5~
+  JwtExpiration: 1
+  JwtRefreshExpiration: 5
+  JwtKey: test1234
 ########################
 # Web Server settings #
 web:
@@ -45,44 +63,45 @@ web:
   ssl: true # true/false, if server has SSL certificate set to true to use HTTPS, false = HTTP
   listen: 0.0.0.0 # address on which application is running. Not localhost!
   port: 443 # port on which application is running
-  ui: ./dist/spa #path to ui spa
-  crt: ./certs/server.crt
-  key: ./certs/server.key
+  ui: ./ui #path to ui spa
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
   tls_min: TLS12
-
-########################
-# Dtabase settings #
-database:
-  url: postgresql://admin:P@55w0rd@127.0.0.1:5432/meteo?sslmode=disable
-  pool:
-    max: 50
-  sync: false
-  exclude:
-    - ssh_hosts
+  logLevel: info
 
 ########################
 # Proxy settings #
 proxy:
   title: Proxy
-  active: false
+  active: true
   listen: 0.0.0.0
   udpPort: 53
   tcpPort: 53
-  restBind: 0.0.0.0
-  restPort: 11000
-  restCrt: ./certs/server.crt
-  restKey: ./certs/server.key
+  rest:
+    bind: 0.0.0.0
+    port: 11000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
   metrics: false
   nsvpn:
     - dns.google:853@8.8.8.8
+    - cleanbrowsing.org:853@185.228.168.9
+    - cleanbrowsing.org:853@185.228.169.9
+    - cloudflare-dns.com:853@1.0.0.1
+    - dns.adguard.com:853@94.140.14.14
+    - dns.adguard.com:853@94.140.15.15
+    - dns.quad9.net:853@9.9.9.9
   nsdirect:
-    - one.one.one.one:853@1.1.1.1
+    - dns.google:853@8.8.4.4
+    - cloudflare-dns.com:853@1.1.1.1
   nsprovider:
     - 82.209.200.16
     - 82.209.200.17
   resolvers:
     - 127.0.0.1
-    - 192.168.1.5
+    - 192.168.1.8
   cached: true
   cachesize: 0
   unlocker: true
@@ -96,29 +115,48 @@ proxy:
     - https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
     - https://cdn.jsdelivr.net/gh/evankrob/hosts-filenetrehost@master/ad_servers.txt
     - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+  logLevel: info
 
 ########################
-# XU4 settings #
-xu4:
-  title: XU4
+# Server settings #
+server:
+  title: Server
   active: true
   bind: 0.0.0.0
   port: 15000
-  crt: ./certs/server.crt
-  key: ./certs/server.key
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
+  radius:
+    healthUser: healthy
+    healthPasswd: health123
+    healthKey: testing123
+    healthPort: 18120
+    debugMode: false
+  storage:
+    device: /dev/sdb1
+    mountPoint: /media/samba
+  transmission:
+    user: transmission
+    password: transmission
+  logLevel: info
 
 ########################
 # Messanger settings #
 messanger:
   title: Messanger
-  active: true
+  active: false
   bind: 0.0.0.0
   port: 14000
-  crt: ./certs/server.crt
-  key: ./certs/server.key
-  telegramchatid: ${CHATID}
-  telegramkey: ${KEY}
-  telegramurl: https://api.telegram.org/bot
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
+  telegram:
+    active: false
+    chatid: "your_chatid"
+    key: "your_key"
+    url: https://api.telegram.org/bot
+  logLevel: info
 
 ########################
 # SSHCLIENT settings #
@@ -127,19 +165,20 @@ sshclient:
   active: true
   bind: 0.0.0.0
   port: 13000
-  crt: ./certs/server.crt
-  key: ./certs/server.key
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
   git:
-    host: 192.168.1.1
+    host: 192.168.1.9
     port: 2222
-    user: vivask
+    user: user
     repository: Mikrotiks
     remote: origin
     commit: "initial commit"
   ppp:
     host: 192.168.1.1
     port: 22
-    user: manager
+    user: user
     interface: ByFly
     script: ppp-restart
   mikrotik:
@@ -154,16 +193,25 @@ sshclient:
       - 22
       - 22
     users:
-      - ${USER1}
-      - ${USER1}
-      - ${USER1}
-      - ${USER1}
+      - user1
+      - user2
+      - user3
+      - user4
     repository: /opt/www/git/Mikrotik
   vpn:
     host: 192.168.1.1
     port: 22
-    user: ${USER}
+    user: user1
     list: tovpn
+  main:
+    host: 192.168.1.10
+    port: 22
+    user: main
+  backup:
+    host: 192.168.1.11
+    port: 22
+    user: backup
+  logLevel: debug
 
 ########################
 # SCHEDULE settings #
@@ -172,5 +220,21 @@ schedule:
   active: true
   bind: 0.0.0.0
   port: 12000
-  crt: ./certs/server.crt
-  key: ./certs/server.key
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
+  logLevel: info
+
+########################
+# ESP32 settings #
+esp32:
+  title: Esp32
+  active: true
+  bind: 0.0.0.0
+  port: 17000
+  ca: /run/secrets/ca.crt
+  crt: /run/secrets/server.crt
+  key: /run/secrets/server.key
+  mac: 34:94:54:24:8D:14 #40:91:51:9B:39:04
+  check: false
+  logLevel: info

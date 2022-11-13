@@ -1,0 +1,91 @@
+# OpenSSL root CA configuration file.
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+
+# default folders
+dir               = /home/w/Projects/Meteo/Backend/certs
+certs             = $dir/crt
+crl_dir           = $dir/crl
+new_certs_dir     = $dir/newcerts
+database          = $dir/index.txt
+serial            = $dir/serial
+RANDFILE          = $dir/key/.rand
+
+# CA private key and certificate files
+private_key       = $dir/key/ca.key
+certificate       = $dir/crt/ca.crt
+
+# Certificate revocation list
+crlnumber         = $dir/crlnumber
+crl               = $dir/crl/ca.crl
+crl_extensions    = crl_ext
+default_crl_days  = 30
+
+# Use SHA-2
+default_md        = sha256
+
+name_opt          = ca_default
+cert_opt          = ca_default
+default_days      = 3650
+preserve          = no
+policy            = policy_default
+
+[ policy_default ]
+commonName              = supplied
+organizationalUnitName  = optional
+organizationName        = optional
+localityName            = optional
+stateOrProvinceName     = optional
+countryName             = optional
+emailAddress            = optional
+
+[ req ]
+# Settings for new requests
+default_bits        = 2048
+distinguished_name  = req_distinguished_name
+default_md          = sha256
+x509_extensions     = ca_cert
+prompt 							= no
+
+[ req_distinguished_name ]
+countryName                     = BY
+stateOrProvinceName             = VTB
+localityName                    = POLOTSK
+organizationName                = ESP_SERVER
+organizationalUnitName          = ESP_SERVER
+commonName                      = 192.168.1.5
+emailAddress                    = esp_server@gmail.com
+
+[ ca_cert ]
+# Extensions for CA certificates
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+
+[ usr_cert ]
+# Extensions for client certificates
+basicConstraints = CA:FALSE
+nsCertType = client, email
+nsComment = "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth, emailProtection
+
+[ server_cert ]
+# Extensions for server certificates
+basicConstraints = CA:FALSE
+nsCertType = server
+nsComment = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[ crl_ext ]
+# Extension for CRLs
+authorityKeyIdentifier=keyid:always
