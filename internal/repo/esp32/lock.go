@@ -18,7 +18,7 @@ var (
 
 func UnlockBmx280(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/unlock/bmx280", nil)
+		_, err := kit.PutExt("/esp32/database/unlock/bmx280", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -31,7 +31,7 @@ func UnlockBmx280(ext bool) error {
 
 func LockBmx280(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/lock/bmx280", nil)
+		_, err := kit.PutExt("/esp32/database/lock/bmx280", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -50,7 +50,7 @@ func isLockedBmx280() bool {
 
 func UnlockDs18b20(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/unlock/ds18b20", nil)
+		_, err := kit.PutExt("/esp32/database/unlock/ds18b20", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -63,7 +63,7 @@ func UnlockDs18b20(ext bool) error {
 
 func LockDs18b20(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/lock/ds18b20", nil)
+		_, err := kit.PutExt("/esp32/database/lock/ds18b20", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -82,7 +82,7 @@ func isLockedDs18b20() bool {
 
 func UnlockZe08ch2o(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/unlock/ze08ch2o", nil)
+		_, err := kit.PutExt("/esp32/database/unlock/ze08ch2o", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -95,7 +95,7 @@ func UnlockZe08ch2o(ext bool) error {
 
 func LockZe08ch2o(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/lock/ze08ch2o", nil)
+		_, err := kit.PutExt("/esp32/database/lock/ze08ch2o", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -114,7 +114,7 @@ func isLockedZe08ch2o() bool {
 
 func UnlockRadsens(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/unlock/radsens", nil)
+		_, err := kit.PutExt("/esp32/database/unlock/radsens", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -127,7 +127,7 @@ func UnlockRadsens(ext bool) error {
 
 func LockRadsens(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/lock/radsens", nil)
+		_, err := kit.PutExt("/esp32/database/lock/radsens", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -146,7 +146,7 @@ func isLockedRadsens() bool {
 
 func UnlockMics6814(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/unlock/mics6814", nil)
+		_, err := kit.PutExt("/esp32/database/unlock/mics6814", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}
@@ -159,7 +159,7 @@ func UnlockMics6814(ext bool) error {
 
 func LockMics6814(ext bool) error {
 	if ext {
-		_, err := kit.PutExt("/admin/db/lock/mics6814", nil)
+		_, err := kit.PutExt("/esp32/database/lock/mics6814", nil)
 		if err != nil {
 			return fmt.Errorf("error PUT: %w", err)
 		}

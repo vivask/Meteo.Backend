@@ -16,7 +16,6 @@ type ScheduleAPI interface {
 	GetAllJobs(c *gin.Context)
 	AddJob(c *gin.Context)
 	GetAllPeriods(c *gin.Context)
-	GetAllDays(c *gin.Context)
 	GetAllExecutors(c *gin.Context)
 	GetCronJobs(c *gin.Context)
 	ActivateJob(c *gin.Context)

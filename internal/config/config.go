@@ -18,7 +18,6 @@ func init() {
 type Config struct {
 	App struct {
 		Mode       string
-		Master     bool `yaml:"master"`
 		Server     string
 		HealthPort uint
 	}
@@ -29,6 +28,7 @@ type Config struct {
 		Ca        string
 		Crt       string
 		Key       string
+		DbLink    string
 		Interface string
 		VirtualIP string
 		LogLevel  string
@@ -60,12 +60,15 @@ type Config struct {
 		Ca       string
 		Crt      string
 		Key      string
+		DbLink   string
 		TlsMin   string
 		LogLevel string
 	}
 	Database struct {
-		URL      string
-		UrlLocal string
+		Name     string
+		User     string
+		Password string
+		Port     uint
 		Pool     struct {
 			Max uint
 		}
@@ -78,6 +81,7 @@ type Config struct {
 		Listen  string
 		UdpPort uint
 		TcpPort uint
+		DbLink  string
 		Rest    struct {
 			Bind string
 			Port uint
@@ -108,6 +112,7 @@ type Config struct {
 		Ca     string
 		Crt    string
 		Key    string
+		DbLink string
 		Radius struct {
 			HealthUser   string
 			HealthPasswd string
@@ -149,6 +154,7 @@ type Config struct {
 		Ca     string
 		Crt    string
 		Key    string
+		DbLink string
 		Git    struct {
 			Host       string
 			Port       uint
@@ -196,6 +202,7 @@ type Config struct {
 		Ca       string
 		Crt      string
 		Key      string
+		DbLink   string
 		LogLevel string
 	}
 	Esp32 struct {
@@ -206,6 +213,7 @@ type Config struct {
 		Ca       string
 		Crt      string
 		Key      string
+		DbLink   string
 		Mac      string
 		Check    bool
 		LogLevel string

@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -61,13 +62,22 @@ func initConfig() {
 	config.Parse()
 }
 
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
 func startCluster(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Cluster.Title, config.Default.Cluster.LogLevel)
 
 	log.Info("Starting cluster...")
 
-	db, err := gorm.Open(postgres.Open(config.Default.Database.UrlLocal))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.Cluster.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}
@@ -103,13 +113,18 @@ func startCluster(cmd *cobra.Command, agrs []string) {
 
 	// run the server with gracefull shutdown
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
+	fErr := make(chan error, 1)
+	started := make(chan bool, 1)
 	go func() {
-		if err := vip.StartupVirtualIP(ctx); err != nil {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
+		fErr <- vip.StartupVirtualIP(ctx, started)
 	}()
+	select {
+	case e := <-fErr:
+		log.Fatalf("Virtual IP started fail: %v", e)
+	case <-started:
+		log.Debug("Virtual IP started success")
+	}
 
 	var srv *http.Server
 	// run the server with gracefull shutdown
@@ -149,11 +164,14 @@ func startCluster(cmd *cobra.Command, agrs []string) {
 	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+	cancel()
+	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	log.Infof("Shutdown %s Server ...", config.Default.Cluster.Title)
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Cluster.Title, err)
 	}
-	// catching ctx.Done(). timeout of 1 seconds.
+	// catching ctx.Done(). timeout of 2 seconds.
 	<-ctx.Done()
 	log.Infof("%s Server exiting", config.Default.Cluster.Title)
 }

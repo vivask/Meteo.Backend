@@ -545,16 +545,8 @@ func (s *Server) exchangeMessages(p *pool, q *dns.Msg) (resp *dns.Msg, err error
 	return resp, err
 }
 
-func (s *Server) zones() *Zones {
-	return s.zo
-}
-
 func (s *Server) SetZones(z *Zones) {
 	s.zo = z
-}
-
-func (s *Server) blacklist() *BlackList {
-	return s.bl
 }
 
 func (s *Server) SetBlackList(b *BlackList) {
@@ -564,10 +556,6 @@ func (s *Server) SetBlackList(b *BlackList) {
 func (s *Server) SetBlackListData(m map[string]struct{}) {
 	s.bl.SetData(m)
 	s.bl.SaveToFile()
-}
-
-func (s *Server) unlocker() *Unlocker {
-	return s.un
 }
 
 func (s *Server) SetUnlocker(u *Unlocker) {
@@ -588,14 +576,25 @@ func (s *Server) GetUnlock() bool {
 
 func (s *Server) SetAdBlock(on bool) {
 	s.adblockOn = on
+	log.Infof("Ad block %s", ON(on))
 }
 
 func (s *Server) SetCache(on bool) {
 	s.cacheOn = on
+	log.Infof("Cache %s", ON(on))
 }
 
 func (s *Server) SetUnlock(on bool) {
 	s.unlockerOn = on
+	log.Infof("Unlocker %s", ON(on))
+}
+
+func ON(v bool) string {
+	ON := "ON"
+	if !v {
+		ON = "OFF"
+	}
+	return ON
 }
 
 func (s *Server) isBlocked(host string) bool {
@@ -629,14 +628,12 @@ func (s *Server) UnlockIfLocked(host string, r *dns.Msg, un *Unlocker) {
 		if !un.Exist(host) && !un.Ignore(host) {
 			s.queu[host] = struct{}{}
 			if s.isBlocked(host) {
-				if strings.HasSuffix(host, ".") {
-					host = host[:len(host)-1]
-				}
+				host = strings.TrimSuffix(host, ".")
 				err := s.un.AddAutoHostToVpn(host)
 				if err != nil {
 					log.Errorf("Failed to add host [%s] to vpn, error: %v", host, err)
 				}
-				log.Infof("Found and unlocked blocked host [%v] ", host)
+				log.Infof("Found and unlocked host [%s] ", host)
 			}
 			delete(s.queu, host)
 		}

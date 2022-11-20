@@ -61,13 +61,22 @@ func initConfig() {
 	config.Parse()
 }
 
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
 func startEsp32(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Esp32.Title, config.Default.Esp32.LogLevel)
 
 	log.Info("Starting esp32...")
 
-	db, err := gorm.Open(postgres.Open(config.Default.Database.URL))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.Esp32.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}
@@ -154,7 +163,7 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 	<-quit
 	log.Infof("Shutdown %s Server ...", config.Default.Esp32.Title)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Esp32.Title, err)

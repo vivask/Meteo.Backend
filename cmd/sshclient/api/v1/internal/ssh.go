@@ -26,13 +26,12 @@ type SshLink interface {
 }
 
 type sshlink struct {
-	link       string
-	username   string
-	host       string
-	port       string
-	cnf        *ssh.ClientConfig
-	session    *ssh.Session
-	connection *ssh.Client
+	link     string
+	username string
+	host     string
+	port     string
+	cnf      *ssh.ClientConfig
+	conn     *ssh.Client
 }
 
 var repozitory repo.SshClientService = nil
@@ -55,19 +54,16 @@ func NewSSHLink(address, username string) (SshLink, error) {
 		return nil, fmt.Errorf("ssh dial error: %w", err)
 	}
 
-	s, err := conn.NewSession()
-	if err != nil {
-		return nil, fmt.Errorf("ssh session error: %w", err)
+	link := &sshlink{
+		link:     address,
+		username: username,
+		host:     split[0],
+		port:     split[1],
+		cnf:      c,
+		conn:     conn,
 	}
-	return &sshlink{
-		link:       address,
-		username:   username,
-		host:       split[0],
-		port:       split[1],
-		cnf:        c,
-		connection: conn,
-		session:    s,
-	}, nil
+
+	return link, nil
 }
 
 func GetConfig(username, host string) (*ssh.ClientConfig, error) {

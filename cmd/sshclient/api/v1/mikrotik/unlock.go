@@ -5,6 +5,7 @@ import (
 	SSH "meteo/cmd/sshclient/api/v1/internal"
 	"meteo/internal/config"
 	"meteo/internal/entities"
+	"meteo/internal/log"
 	"net/http"
 	"strings"
 
@@ -126,7 +127,6 @@ func (p mikrotikAPI) PutInVpn(host entities.ToVpnManual) error {
 	if err != nil {
 		return fmt.Errorf("ssh exec error: %w", err)
 	}
-
 	return nil
 }
 
@@ -144,20 +144,22 @@ func (p mikrotikAPI) RemoveFromVpn(host entities.ToVpnManual) error {
 		host.ListID = config.Default.SshClient.Vpn.List
 	}
 
-	req, err := link.Exec("/ip firewall address-list print", 1)
+	req, err := link.Exec("/ip firewall address-list print", 3)
 	if err != nil {
 		return fmt.Errorf("ssh exec error: %w", err)
 	}
+	//log.Debugf("REQ: %s", req)
 	split := strings.Split(req, "\n")
 	found := "-1"
 	for _, s := range split {
 		words := strings.Fields(s)
 		if len(words) > 2 && words[1] == host.AccesList.ID && words[2] == host.Name {
-			//m.logger.Infof("ID: %s, List: %s, Name: %s", words[0], words[1], words[2])
+			log.Debugf("ID: %s, List: %s, Name: %s", words[0], words[1], words[2])
 			found = words[0]
 		}
 	}
 	if found == "-1" {
+		log.Errorf("not found host [%s]", host.Name)
 		return fmt.Errorf("not found host in access list")
 	}
 

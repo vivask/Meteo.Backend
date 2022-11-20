@@ -42,10 +42,6 @@ func (p scheduleAPI) AddJob(c *gin.Context) {
 		return
 	}
 
-	if job.Day.ID == 0 {
-		job.Day.ID = 1
-	}
-
 	err := p.repo.AddJob(job)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError,
@@ -66,8 +62,7 @@ func (p scheduleAPI) EditJob(c *gin.Context) {
 		len(job.Note) == 0 ||
 		len(job.Executor.ID) == 0 ||
 		len(job.Task.ID) == 0 ||
-		len(job.Period.ID) == 0 ||
-		job.Day.ID == 0 {
+		len(job.Period.ID) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest,
 			gin.H{
 				"code":    http.StatusBadRequest,
@@ -187,19 +182,6 @@ func (p scheduleAPI) GetAllPeriods(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": periods})
-}
-
-func (p scheduleAPI) GetAllDays(c *gin.Context) {
-	days, err := p.repo.GetAllDays(dto.Pageable{})
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "success", "data": days})
 }
 
 func (p scheduleAPI) GetAllExecutors(c *gin.Context) {

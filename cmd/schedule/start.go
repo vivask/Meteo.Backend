@@ -42,7 +42,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file (default is $PWD/config/default.yaml)")
 	startCmd.PersistentFlags().Int("port", 12000, "Port to run Application server on")
 	startCmd.PersistentFlags().BoolVarP(&enablePprof, "pprof", "p", false, "enable pprof mode (default: false)")
-	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", true, "enable auto migrate (default: false)")
+	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", false, "enable auto migrate (default: false)")
 	config.Viper().BindPFlag("port", startCmd.PersistentFlags().Lookup("port"))
 }
 
@@ -61,13 +61,22 @@ func initConfig() {
 	config.Parse()
 }
 
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
 func startSchedule(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Schedule.Title, config.Default.Schedule.LogLevel)
 
 	log.Info("Starting schedule...")
 
-	db, err := gorm.Open(postgres.Open(config.Default.Database.URL))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.Schedule.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}

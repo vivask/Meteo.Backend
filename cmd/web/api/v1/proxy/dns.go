@@ -247,66 +247,66 @@ func SetProxyUnlockOff(c *gin.Context, master bool) {
 	c.Status(http.StatusOK)
 }
 
-func (p proxyAPI) SetMasterProxyStart(c *gin.Context) {
+func (p proxyAPI) SetMainProxyStart(c *gin.Context) {
 	SetProxyStart(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyStop(c *gin.Context) {
+func (p proxyAPI) SetMainProxyStop(c *gin.Context) {
 	SetProxyStop(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyAdBlockOn(c *gin.Context) {
+func (p proxyAPI) SetMainProxyAdBlockOn(c *gin.Context) {
 	SetProxyAdBlockOn(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyAdBlockOff(c *gin.Context) {
+func (p proxyAPI) SetMainProxyAdBlockOff(c *gin.Context) {
 	SetProxyAdBlockOff(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyCacheOn(c *gin.Context) {
+func (p proxyAPI) SetMainProxyCacheOn(c *gin.Context) {
 	SetProxyCacheOn(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyCacheOff(c *gin.Context) {
+func (p proxyAPI) SetMainProxyCacheOff(c *gin.Context) {
 	SetProxyCacheOff(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyUnlockOn(c *gin.Context) {
+func (p proxyAPI) SetMainProxyUnlockOn(c *gin.Context) {
 	SetProxyUnlockOn(c, true)
 }
 
-func (p proxyAPI) SetMasterProxyUnlockOff(c *gin.Context) {
+func (p proxyAPI) SetMainProxyUnlockOff(c *gin.Context) {
 	SetProxyUnlockOff(c, true)
 }
 
-func (p proxyAPI) SetSlaveProxyStart(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyStart(c *gin.Context) {
 	SetProxyStart(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyStop(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyStop(c *gin.Context) {
 	SetProxyStop(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyAdBlockOn(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyAdBlockOn(c *gin.Context) {
 	SetProxyAdBlockOn(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyAdBlockOff(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyAdBlockOff(c *gin.Context) {
 	SetProxyAdBlockOff(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyCacheOn(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyCacheOn(c *gin.Context) {
 	SetProxyCacheOn(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyCacheOff(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyCacheOff(c *gin.Context) {
 	SetProxyCacheOff(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyUnlockOn(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyUnlockOn(c *gin.Context) {
 	SetProxyUnlockOn(c, false)
 }
 
-func (p proxyAPI) SetSlaveProxyUnlockOff(c *gin.Context) {
+func (p proxyAPI) SetBackupProxyUnlockOff(c *gin.Context) {
 	SetProxyUnlockOff(c, false)
 }

@@ -7,15 +7,16 @@
 # Applicaton settings #
 app:
   mode: single #Must be sinle or dual
-  master: true
   server: main #Must be main or backup
   healthPort: 20000
 
 ########################
 # Dtabase settings #
 database:
-  url: postgresql://admin:P@55word@postgres:5432/bname?sslmode=disable
-  urlLocal: postgresql://admin:P@55word@127.0.0.1:5432/dbname?sslmode=disable
+  name: dbname
+  user: admin
+  password: P@55word
+  port: 5432
   pool:
     max: 50
   sync: true
@@ -31,6 +32,7 @@ cluster:
   ca: /run/secrets/ca.crt
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
+  dblink: 127.0.0.1
   interface: eth0
   virtualip: 192.168.1.99
   logLevel: info
@@ -68,6 +70,7 @@ web:
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
   tls_min: TLS12
+  dblink: postgres
   logLevel: info
 
 ########################
@@ -78,6 +81,7 @@ proxy:
   listen: 0.0.0.0
   udpPort: 53
   tcpPort: 53
+  dblink: postgres
   rest:
     bind: 0.0.0.0
     port: 11000
@@ -127,6 +131,7 @@ server:
   ca: /run/secrets/ca.crt
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
+  dblink: 127.0.0.1
   radius:
     healthUser: healthy
     healthPasswd: health123
@@ -168,6 +173,7 @@ sshclient:
   ca: /run/secrets/ca.crt
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
+  dblink: postgres
   git:
     host: 192.168.1.9
     port: 2222
@@ -223,6 +229,7 @@ schedule:
   ca: /run/secrets/ca.crt
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
+  dblink: postgres
   logLevel: info
 
 ########################
@@ -235,6 +242,7 @@ esp32:
   ca: /run/secrets/ca.crt
   crt: /run/secrets/server.crt
   key: /run/secrets/server.key
+  dblink: postgres
   mac: 34:94:54:24:8D:14 #40:91:51:9B:39:04
   check: false
   logLevel: info

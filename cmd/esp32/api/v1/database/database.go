@@ -9,11 +9,6 @@ import (
 
 type DatabaseAPI interface {
 	RegisterAPIV1(router *gin.RouterGroup)
-	GetAllTables(c *gin.Context)
-	GetAllSTypes(c *gin.Context)
-	AddTable(c *gin.Context)
-	EditTable(c *gin.Context)
-	DelTable(c *gin.Context)
 }
 
 type databaseAPI struct {

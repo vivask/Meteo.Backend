@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 	s "strings"
 
 	"meteo/internal/dto"
@@ -167,11 +165,11 @@ func (b *BlackList) loadFromFile() (count int, err error) {
 		return 0, fmt.Errorf("open file error: %w", err)
 	}
 	defer f.Close()
-	buf := new(strings.Builder)
+	buf := new(s.Builder)
 	io.Copy(buf, f)
-	hosts := strings.Split(buf.String(), "\n")
+	hosts := s.Split(buf.String(), "\n")
 	for _, host := range hosts {
-		if len(strings.Trim(host, " ")) != 0 {
+		if len(s.Trim(host, " ")) != 0 {
 			b.data[host] = struct{}{}
 			count++
 		}
@@ -181,7 +179,7 @@ func (b *BlackList) loadFromFile() (count int, err error) {
 
 func (b *BlackList) SaveToFile() error {
 	if len(b.data) == 0 {
-		return errors.New("Ad block list is empty!")
+		return errors.New("ad block list is empty")
 	}
 
 	fName := fmt.Sprintf("%s/%s", blockListDir, blockListFileName)
@@ -226,7 +224,7 @@ func updateList(lists []string) (*BlackList, []bool) {
 			continue
 		}
 
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Infof("[black] Can't read body of %s", v)
 			continue

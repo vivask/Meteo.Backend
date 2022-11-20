@@ -12,7 +12,7 @@ func (p proxyAPI) GetState(c *gin.Context) {
 
 	state := entities.ProxyState{
 		Active:  p.IsStarted(),
-		Master:  kit.IsMain(),
+		Main:    kit.IsMain(),
 		AdBlock: p.dns.GetAdBlock(),
 		Cache:   p.dns.GetCache(),
 		Unlock:  p.dns.GetUnlock(),

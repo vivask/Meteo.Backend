@@ -10,17 +10,14 @@ import (
 	"github.com/go-co-op/gocron"
 )
 
-var started bool
-
 type Options struct {
 	job    entities.Jobs
 	off    bool
 	repeat bool
 }
 
-func (p scheduleAPI) jobFunc(o *Options) {
-	log.Debugf("Job [%s], api [%s] running...", o.job.Note, o.job.Task.Api)
-	log.Debugf("Params: %v", o.job.Params)
+func (p scheduleAPI) jobFunc(o Options) {
+	log.Debugf("Task: %v, Params: %v", o.job.Task.Api, o.job.Params)
 	_, err := kit.PutInt(o.job.Task.Api, o.job.Params)
 	if err != nil {
 		log.Errorf("Job: [%v] executed error: %v", o.job.Note, err)
@@ -73,9 +70,9 @@ func (p scheduleAPI) executeJobs() error {
 		return fmt.Errorf("job list is empty")
 	}
 
-	log.Warningf("Cron jobs available: %v", len(jobs))
+	log.Debugf("Cron jobs available: %v", len(jobs))
 	for _, job := range jobs {
-		err = p.selectTask(&job)
+		err = p.selectTask(job)
 		if err != nil {
 			p.repo.DeactivateJob(job.ID, false)
 			log.Errorf("can't start job [%s] error: %v", job.Note, err)
@@ -84,25 +81,13 @@ func (p scheduleAPI) executeJobs() error {
 	return nil
 }
 
-func (p scheduleAPI) executeJob(job_id uint32) error {
-	job, err := p.repo.GetJobByID(job_id)
-	if err != nil {
-		return fmt.Errorf("GetJob error: %w", err)
-	}
-	err = p.selectTask(job)
-	if err != nil {
-		return fmt.Errorf("selectTask error: %w", err)
-	}
-	return nil
-}
-
-func (p scheduleAPI) selectTask(job *entities.Jobs) error {
-	if job.Executor.ID == "Master" && !kit.IsMain() {
-		log.Warningf("can't run job [%s] as Slave, need Master", job.Note)
+func (p scheduleAPI) selectTask(job entities.Jobs) error {
+	if job.Executor.ID == "Main" && !kit.IsMain() {
+		log.Warningf("can't run job [%s] as Backup, need Main", job.Note)
 		return nil
 	}
-	if job.Executor.ID == "Slave" && kit.IsMain() {
-		log.Warningf("can't run job [%s] as Master, need Slave", job.Note)
+	if job.Executor.ID == "Backup" && kit.IsMain() {
+		log.Warningf("can't run job [%s] as Main, need Backup", job.Note)
 		return nil
 	}
 	if job.Executor.ID == "Leader" && !kit.IsLeader() {
@@ -111,9 +96,8 @@ func (p scheduleAPI) selectTask(job *entities.Jobs) error {
 	}
 
 	cronJob, err := p.addJob(job)
-	if err != nil || cronJob == nil {
-		log.Errorf("addJob error: %v", err)
-		return fmt.Errorf("addJob error: %w", err)
+	if err != nil {
+		return fmt.Errorf("add job error: %w", err)
 	}
 	p.jobs[job.ID] = cronJob
 	return nil
@@ -131,7 +115,6 @@ func (p scheduleAPI) StartCron() {
 
 	p.LogActiveJobs()
 
-	started = true
 }
 
 func (p scheduleAPI) StopCron() {

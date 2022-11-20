@@ -11,8 +11,10 @@ import (
 var DeafultLeader *Leader
 
 func InitLeader() {
-	DeafultLeader = NewLeader(config.Default.App.Master, config.Default.Client.Local,
-		config.Default.Client.Remote, config.Default.App.Server)
+	DeafultLeader = NewLeader(
+		config.Default.Client.Local,
+		config.Default.Client.Remote,
+		config.Default.App.Server)
 }
 
 func IsMain() bool { return config.Default.App.Server == "main" }
@@ -49,12 +51,9 @@ func IsLeader() bool {
 }
 
 func IsAliveRemote() bool {
-	c, err := getClusterState()
-	if err != nil {
-		log.Error(err)
-		return false
-	}
-	return c.AliveRemote
+	const PASSPHRASE = "aA2Xh41FiC4Wtj3e5b2LbytMdn6on7P0"
+	resp, err := UdpSend(PASSPHRASE)
+	return (err == nil && resp == PASSPHRASE)
 }
 
 func LocalIP() string { return DeafultLeader.LocalIP() }

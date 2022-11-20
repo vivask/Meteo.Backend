@@ -24,7 +24,6 @@ type ScheduleService interface {
 	DeleteJob(id uint32) error
 	GetAllActiveJobs() ([]entities.Jobs, error)
 	GetAllPeriods(pageable dto.Pageable) ([]entities.Periods, error)
-	GetAllDays(pageable dto.Pageable) ([]entities.Days, error)
 	GetAllExecutors(pageable dto.Pageable) ([]entities.Executors, error)
 }
 

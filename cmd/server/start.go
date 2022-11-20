@@ -64,17 +64,22 @@ func initConfig() {
 	config.Parse()
 }
 
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
 func startServer(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Server.Title, config.Default.Server.LogLevel)
 
 	log.Info("Starting Server...")
-	db_url := config.Default.Database.URL
-	if config.Default.App.Server == "main" {
-		db_url = config.Default.Database.UrlLocal
-	}
 
-	db, err := gorm.Open(postgres.Open(db_url))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.Server.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}
@@ -165,7 +170,7 @@ func startServer(cmd *cobra.Command, agrs []string) {
 	<-quit
 	log.Infof("Shutdown %s Server ...", config.Default.Server.Title)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Server.Title, err)
@@ -173,7 +178,7 @@ func startServer(cmd *cobra.Command, agrs []string) {
 	if err := healt.Shutdown(ctx); err != nil {
 		log.Errorf("%s Health Shutdown error: %s", config.Default.Server.Title, err)
 	}
-	// catching ctx.Done(). timeout of 1 seconds.
+	// catching ctx.Done(). timeout of 2 seconds.
 	<-ctx.Done()
 	log.Infof("%s Server exiting", config.Default.Server.Title)
 }

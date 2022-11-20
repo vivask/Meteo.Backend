@@ -26,10 +26,10 @@ func CreateSettings(db *gorm.DB) error {
 func CreateExecutors(db *gorm.DB) error {
 	if db.First(&entities.Executors{}).Error == gorm.ErrRecordNotFound {
 		executors := []entities.Executors{
-			{ID: "Master"},
-			{ID: "Leader"},
-			{ID: "Slave"},
-			{ID: "All"},
+			{ID: "leader", Name: "Leader", Idx: 1},
+			{ID: "main", Name: "Main", Idx: 2},
+			{ID: "backup", Name: "Backup", Idx: 3},
+			{ID: "all", Name: "All", Idx: 4},
 		}
 		err := db.Create(&executors).Error
 		if err != nil {
@@ -50,37 +50,14 @@ func CreatePeriods(db *gorm.DB) error {
 			{ID: "hour", Name: "Hour", Idx: 4},
 			{ID: "day", Name: "Day", Idx: 5},
 			{ID: "week", Name: "Week", Idx: 6},
-			{ID: "day_of_week", Name: "Day of week", Idx: 7},
-			{ID: "month", Name: "Month", Idx: 8},
-			{ID: "year", Name: "Year", Idx: 9},
+			{ID: "month", Name: "Month", Idx: 7},
+			{ID: "year", Name: "Year", Idx: 8},
 		}
 		err := db.Create(&periods).Error
 		if err != nil {
 			return fmt.Errorf("insert periods error: %w", err)
 		}
 		log.Debugf("save periods: initialize")
-	}
-	return nil
-
-}
-
-func CreateDays(db *gorm.DB) error {
-
-	if db.First(&entities.Days{}).Error == gorm.ErrRecordNotFound {
-		days := []entities.Days{
-			{ID: 1, Name: "Monday"},
-			{ID: 2, Name: "Tuesday"},
-			{ID: 3, Name: "Wednesday"},
-			{ID: 4, Name: "Thursday"},
-			{ID: 5, Name: "Friday"},
-			{ID: 6, Name: "Saturday"},
-			{ID: 7, Name: "Sunday"},
-		}
-		err := db.Create(&days).Error
-		if err != nil {
-			return fmt.Errorf("insert days error: %w", err)
-		}
-		log.Debugf("save days: initialize")
 	}
 	return nil
 
@@ -150,25 +127,19 @@ func CreateTasks(db *gorm.DB) error {
 			{
 				ID:   "syncdb",
 				Name: "Synchronyze ESP32 tables",
-				Api:  "/database/sync",
+				Api:  "/esp32/database/sync",
 				Note: "Синхронизация таблиц контроллера",
-			},
-			{
-				ID:   "storMount",
-				Name: "Storage mount",
-				Api:  "/xu4/storage/mount",
-				Note: "Проверка подключения хранилища",
 			},
 			{
 				ID:   "mikrotiks",
 				Name: "Mikrotiks Backup",
-				Api:  "/xu4/mikrotiks/backup",
+				Api:  "/main/mikrotiks/backup",
 				Note: "Бэкап конфигураций и образов роутеров mikrotik",
 			},
 			{
 				ID:   "powercom",
 				Name: "Powercom health",
-				Api:  "/xu4/powercom/health",
+				Api:  "/main/powercom/health",
 				Note: "Проверка состояния драйвера ИБП",
 			},
 			{

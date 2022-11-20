@@ -61,13 +61,22 @@ func initConfig() {
 	config.Parse()
 }
 
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
 func startProxy(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Proxy.Title, config.Default.Proxy.LogLevel)
 
 	log.Info("Starting proxy server...")
 
-	db, err := gorm.Open(postgres.Open(config.Default.Database.URL))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.Proxy.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}
@@ -145,15 +154,15 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	<-quit
 
 	log.Infof("Shutdown %s Server ...", config.Default.Proxy.Title)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Proxy.Title, err)

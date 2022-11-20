@@ -203,9 +203,8 @@ func Do(service *Service, req *http.Request) ([]byte, error) {
 		return nil, fmt.Errorf("serialization error: %w", err)
 	}
 
-	const err404 = "404 page not found"
-	if string(body) == err404 {
-		return nil, fmt.Errorf("%s", err404)
+	if string(body) == "404 page not found" {
+		return nil, fmt.Errorf("404 page [%s] not found ", resp.Request.URL)
 	}
 
 	return body, nil

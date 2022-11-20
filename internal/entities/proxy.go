@@ -52,7 +52,7 @@ func (ToVpnIgnore) TableName() string {
 
 type ProxyState struct {
 	Active  bool `json:"active"`
-	Master  bool `json:"master"`
+	Main    bool `json:"main"`
 	AdBlock bool `json:"adblock"`
 	Cache   bool `json:"cache"`
 	Unlock  bool `json:"unlock"`

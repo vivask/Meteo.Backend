@@ -9,6 +9,8 @@ import (
 	"regexp"
 )
 
+const NOTFOUND = "not found host in access list"
+
 func (p proxyService) GetAllManualToVpn(pageable dto.Pageable) (*[]entities.ToVpnManual, error) {
 	hosts := new([]entities.ToVpnManual)
 	err := p.db.Preload("AccesList").Find(&hosts).Error
@@ -32,7 +34,8 @@ func (p proxyService) AddManualToVpn(host entities.ToVpnManual) error {
 		return fmt.Errorf("sshclient internal error: %w", err)
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) EditManualToVpn(host entities.ToVpnManual) error {
@@ -55,12 +58,10 @@ func (p proxyService) EditManualToVpn(host entities.ToVpnManual) error {
 	}
 	tx.Commit()
 
-	return nil
+	return ReloadUnlocker()
 }
 
 func (p proxyService) DelManualFromVpn(id uint32) error {
-
-	const ANSWER = "not found host in access list"
 
 	host := entities.ToVpnManual{}
 	tx := p.db.Begin()
@@ -78,14 +79,15 @@ func (p proxyService) DelManualFromVpn(id uint32) error {
 
 	_, err = kit.PutInt("/sshclient/mikrotik/tovpn/manual/del", host)
 	if err != nil {
-		matched, _ := regexp.MatchString(ANSWER, err.Error())
+		matched, _ := regexp.MatchString(NOTFOUND, err.Error())
 		if !matched {
 			tx.Rollback()
 			return fmt.Errorf("sshclient internal error: %w", err)
 		}
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) GetAllAutoToVpn(pageable dto.Pageable) (*[]entities.ToVpnAuto, error) {
@@ -106,23 +108,25 @@ func (p proxyService) GetManualToVpnByID(id uint32) (*entities.ToVpnManual, erro
 	return host, nil
 }
 
-func (p proxyService) AddAutoToVpn(host *entities.ToVpnAuto) error {
+func (p proxyService) AddAutoToVpn(host entities.ToVpnAuto) error {
 	tx := p.db.Begin()
-	err := tx.Create(host).Error
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("error insert tovpnAuto: %w", err)
-	}
-	_, err = kit.PutInt("/sshclient/mikrotik/tovpn/auto/add", host)
+	_, err := kit.PutInt("/sshclient/mikrotik/tovpn/auto/add", host)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("sshclient internal error: %w", err)
 	}
+	err = tx.Create(&host).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error insert tovpnAuto: %w", err)
+	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) DelAutoFromVpn(hosts []entities.ToVpnAuto) error {
+	re, _ := regexp.Compile(NOTFOUND)
 	tx := p.db.Begin()
 	for _, host := range hosts {
 		err := tx.Delete(&host).Error
@@ -132,12 +136,16 @@ func (p proxyService) DelAutoFromVpn(hosts []entities.ToVpnAuto) error {
 		}
 		_, err = kit.PutInt("/sshclient/mikrotik/tovpn/auto/del", host)
 		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("sshclient internal error: %w", err)
+			matched := re.MatchString(err.Error())
+			if !matched {
+				tx.Rollback()
+				return fmt.Errorf("sshclient internal error: %w", err)
+			}
 		}
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) GetAllIgnoreAutoToVpn(pageable dto.Pageable) (*[]entities.ToVpnIgnore, error) {
@@ -150,6 +158,7 @@ func (p proxyService) GetAllIgnoreAutoToVpn(pageable dto.Pageable) (*[]entities.
 }
 
 func (p proxyService) IgnoreAutoToVpn(hosts []entities.ToVpnAuto) error {
+	re, _ := regexp.Compile(NOTFOUND)
 	tx := p.db.Begin()
 	for _, host := range hosts {
 		err := tx.Delete(&host).Error
@@ -159,8 +168,11 @@ func (p proxyService) IgnoreAutoToVpn(hosts []entities.ToVpnAuto) error {
 		}
 		_, err = kit.PutInt("/sshclient/mikrotik/tovpn/auto/del", host)
 		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("sshclient internal error: %w", err)
+			matched := re.MatchString(err.Error())
+			if !matched {
+				tx.Rollback()
+				return fmt.Errorf("sshclient internal error: %w", err)
+			}
 		}
 		err = tx.Create(&entities.ToVpnIgnore{ID: host.ID, UpdatedAt: host.CreatedAt}).Error
 		if err != nil {
@@ -168,7 +180,8 @@ func (p proxyService) IgnoreAutoToVpn(hosts []entities.ToVpnAuto) error {
 		}
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) RestoreAutoToVpn(hosts []entities.ToVpnIgnore) error {
@@ -191,7 +204,8 @@ func (p proxyService) RestoreAutoToVpn(hosts []entities.ToVpnIgnore) error {
 		}
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) DelIgnoreAutoToVpn(hosts []entities.ToVpnIgnore) error {
@@ -204,7 +218,8 @@ func (p proxyService) DelIgnoreAutoToVpn(hosts []entities.ToVpnIgnore) error {
 		}
 	}
 	tx.Commit()
-	return nil
+
+	return ReloadUnlocker()
 }
 
 func (p proxyService) GetAccessLists(pageable dto.Pageable) (*[]entities.AccesList, error) {
@@ -214,4 +229,18 @@ func (p proxyService) GetAccessLists(pageable dto.Pageable) (*[]entities.AccesLi
 		return nil, fmt.Errorf("error read access_lists: %w", err)
 	}
 	return lists, nil
+}
+
+func ReloadUnlocker() error {
+
+	_, err := kit.PutInt("/proxy/unlocker/reload", nil)
+	if err != nil {
+		return fmt.Errorf("sshclient internal error: %w", err)
+	}
+
+	_, err = kit.PutExt("/proxy/unlocker/reload", nil)
+	if err != nil {
+		return fmt.Errorf("sshclient internal error: %w", err)
+	}
+	return nil
 }

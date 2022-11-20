@@ -24,10 +24,10 @@ func (p proxyService) GetAllHomeZoneHosts() (*[]entities.Homezone, error) {
 		jIP := net.ParseIP(hosts[j].Address)
 		return bytes.Compare(iIP, jIP) < 0
 	})
-	/*err = pinger(hosts)
+	err = pinger(hosts)
 	if err != nil {
 		return nil, fmt.Errorf("pinger error: %w", err)
-	}*/
+	}
 	return &hosts, nil
 }
 

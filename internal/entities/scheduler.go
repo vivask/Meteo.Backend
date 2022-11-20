@@ -43,17 +43,10 @@ func (Periods) TableName() string {
 	return "periods"
 }
 
-type Days struct {
-	ID   uint32 `gorm:"column:id;primaryKey" json:"id"`
-	Name string `gorm:"column:name;not null" json:"name"`
-}
-
-func (Days) TableName() string {
-	return "days"
-}
-
 type Executors struct {
-	ID string `gorm:"column:id;primaryKey;size:20" json:"id"`
+	ID   string `gorm:"column:id;primaryKey;size:20" json:"id"`
+	Name string `gorm:"column:name;not null;unique;size:45" json:"name"`
+	Idx  int    `gorm:"column:idx;not null;unique" json:"idx"`
 }
 
 func (Executors) TableName() string {
@@ -85,8 +78,6 @@ type Jobs struct {
 	Task       Tasks       `gorm:"foreignkey:TaskID" json:"task"`
 	PeriodID   string      `json:"-"`
 	Period     Periods     `gorm:"foreignkey:PeriodID" json:"period"`
-	DayID      int         `json:"-"`
-	Day        Days        `gorm:"foreignkey:DayID" json:"day"`
 	Params     []JobParams `gorm:"foreignKey:JobID;references:ID" json:"params"`
 }
 

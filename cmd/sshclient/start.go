@@ -30,7 +30,7 @@ var (
 		Use:   "start",
 		Short: "start sshclient",
 		Long:  `start sshclient, default rest port is 13000`,
-		Run:   startMessanger,
+		Run:   startSshClient,
 	}
 	enablePprof       bool
 	enableAutomigrate bool
@@ -61,12 +61,21 @@ func initConfig() {
 	config.Parse()
 }
 
-func startMessanger(cmd *cobra.Command, agrs []string) {
+func getDbUrl(link string) string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		config.Default.Database.User,
+		config.Default.Database.Password,
+		link,
+		config.Default.Database.Port,
+		config.Default.Database.Name)
+}
+
+func startSshClient(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.SshClient.Title, config.Default.SshClient.LogLevel)
 
 	log.Info("Starting sshclient...")
-	db, err := gorm.Open(postgres.Open(config.Default.Database.URL))
+	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.SshClient.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}

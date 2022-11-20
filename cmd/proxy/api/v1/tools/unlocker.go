@@ -80,18 +80,6 @@ func (un *Unlocker) AddHost(name string) bool {
 	return false
 }
 
-func (un *Unlocker) RemoveHost(name string) {
-	if un.Exist(name) {
-		delete(un.unlocked, name)
-	}
-}
-
-func (un *Unlocker) RemoveIgnore(name string) {
-	if un.Ignore(name) {
-		delete(un.ignored, name)
-	}
-}
-
 func LoadUnlocker(repo repo.ProxyService) *Unlocker {
 
 	list := NewUnlocker(repo)
@@ -102,9 +90,9 @@ func LoadUnlocker(repo repo.ProxyService) *Unlocker {
 
 func (un *Unlocker) AddAutoHostToVpn(name string) error {
 	if !un.AddHost(name) {
-		return fmt.Errorf("Host [%s] exist, can't insert", name)
+		return fmt.Errorf("host [%s] exist, can't insert", name)
 	}
-	err := un.repo.AddAutoToVpn(&entities.ToVpnAuto{ID: name})
+	err := un.repo.AddAutoToVpn(entities.ToVpnAuto{ID: name})
 	if err != nil {
 		return fmt.Errorf("can't insert records to tovpn_autos: %w", err)
 	}

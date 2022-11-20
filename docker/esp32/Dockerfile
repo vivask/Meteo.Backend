@@ -15,7 +15,7 @@ ADD . /app
 RUN go build -o ./esp32 ./cmd/esp32
 
 FROM alpine:3.16
-ENV GIN_MODE=release
+ENV GIN_MODE=debug
 RUN apk --no-cache add ca-certificates tzdata curl
 ENV TZ="Europe/Minsk"
 WORKDIR /usr/source/app/

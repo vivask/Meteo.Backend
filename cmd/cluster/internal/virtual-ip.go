@@ -15,7 +15,7 @@ var reloadSchedulerRunning = false
 var mux sync.Mutex
 var stop chan struct{}
 
-func StartupVirtualIP(ctx context.Context) error {
+func StartupVirtualIP(ctx context.Context, started chan bool) error {
 
 	stop = make(chan struct{})
 
@@ -49,7 +49,7 @@ func StartupVirtualIP(ctx context.Context) error {
 
 	vipManager := NewVIPManager(netlinkNetworkConfigurator, paramas)
 
-	if err := vipManager.Start(); err != nil {
+	if err := vipManager.Start(ctx, started); err != nil {
 		return fmt.Errorf("start failed: %w", err)
 	}
 

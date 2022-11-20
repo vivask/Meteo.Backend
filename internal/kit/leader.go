@@ -10,7 +10,7 @@ type Leader struct {
 	remoteIP    string
 }
 
-func NewLeader(m bool, l_IP, r_IP, server string) *Leader {
+func NewLeader(l_IP, r_IP, server string) *Leader {
 	return &Leader{
 		server:      server,
 		aliveRemote: false,

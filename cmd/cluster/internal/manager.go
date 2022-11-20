@@ -1,6 +1,7 @@
 package vip
 
 import (
+	"context"
 	"encoding/json"
 	"meteo/internal/entities"
 	"meteo/internal/kit"
@@ -10,13 +11,16 @@ import (
 	"time"
 )
 
-const PASSPHRASE = "aA2Xh41FiC4Wtj3e5b2LbytMdn6on7P0"
+const (
+	TIMEOUT = 100 * time.Millisecond
+)
 
 var (
-	leader      bool
-	aliveRemote bool
-	healthy     bool = true
-	m           sync.Mutex
+	leader         bool
+	aliveRemote    bool
+	healthy        bool = true
+	managerStarted bool = false
+	m              sync.Mutex
 )
 
 type VIPHandler func(alive, leader bool)
@@ -59,10 +63,10 @@ func (manager *VIPManager) deleteIP(verbose bool) {
 	}
 }
 
-func (manager *VIPManager) Start() error {
+func (manager *VIPManager) Start(ctx context.Context, started chan bool) error {
 	manager.stop = make(chan bool, 1)
 	manager.finished = make(chan bool, 1)
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(TIMEOUT * 2)
 
 	setLeader(false)
 
@@ -72,10 +76,7 @@ func (manager *VIPManager) Start() error {
 		for {
 			select {
 			case <-ticker.C:
-				resp, err := UdpSend(PASSPHRASE)
-				remoteAlive := (err == nil && resp == PASSPHRASE)
-				//err := UdptSend(PASSPHRASE)
-				//alive := (err == nil && isAlive())
+				remoteAlive := kit.IsAliveRemote()
 				if manager.remoteAlive != remoteAlive {
 					if remoteAlive {
 						log.Info("Remote server is alive")
@@ -85,35 +86,37 @@ func (manager *VIPManager) Start() error {
 					manager.remoteAlive = remoteAlive
 					SetAliveRemote(remoteAlive)
 				}
+
 				if manager.isRemoteDead(remoteAlive) {
-					log.Debug("RemoteDead")
+					ManagerStarted(started)
 					continue
 				}
 				if manager.isSelfMain() {
-					log.Debug("isSelfMain")
+					ManagerStarted(started)
 					continue
 				}
 				if manager.isRemoteNotLeader() {
-					log.Debug("RemoteNotLeader")
+					ManagerStarted(started)
 					continue
 				}
 				manager.setFollowing()
+				ManagerStarted(started)
 
 			case <-manager.stop:
-				log.Debug("Virtual IP Manager Stopping")
+			case <-ctx.Done():
+				log.Debugf("Virtual IP Manager done: %v", ctx.Err())
 
 				if IsLeader() {
 					manager.deleteIP(true)
 				}
 
 				close(manager.finished)
+				managerStarted = false
 
 				return
 			}
 		}
 	}()
-
-	log.Debug("Virtual IP Manager Started")
 
 	return nil
 }
@@ -244,4 +247,11 @@ func isRemoteLeader() bool {
 		return false
 	}
 	return c.Leader
+}
+
+func ManagerStarted(started chan bool) {
+	if !managerStarted {
+		managerStarted = true
+		started <- true
+	}
 }

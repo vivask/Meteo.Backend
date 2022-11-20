@@ -17,6 +17,14 @@ func prepareIgnoreMap() {
 	}
 }
 
+func AutoSyncOff(table string) {
+	ignoreSync[table] = struct{}{}
+}
+
+func AutoSyncOn(table string) {
+	delete(ignoreSync, table)
+}
+
 // AutoMigrate for migrate database schema
 func AutoMigrate(db *gorm.DB, migrate bool) {
 
@@ -31,7 +39,7 @@ func AutoMigrate(db *gorm.DB, migrate bool) {
 		// Migrate child tables
 		err := tx.AutoMigrate(&entities.SyncTypes{}, &entities.SyncParams{},
 			&entities.TaskParams{}, &entities.JobParams{}, &entities.Periods{},
-			&entities.Days{}, &entities.Executors{}, &entities.JobParams{},
+			&entities.Executors{}, &entities.JobParams{},
 			&entities.GitService{}, &entities.Settings{}, &entities.AccesList{})
 		if err != nil {
 			return err
@@ -55,10 +63,6 @@ func AutoMigrate(db *gorm.DB, migrate bool) {
 			return err
 		}
 		err = CreatePeriods(db)
-		if err != nil {
-			return err
-		}
-		err = CreateDays(db)
 		if err != nil {
 			return err
 		}

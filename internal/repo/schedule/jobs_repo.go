@@ -14,7 +14,7 @@ func (p scheduleService) GetAllJobs(pageable dto.Pageable) ([]entities.Jobs, err
 	var jobs []entities.Jobs
 
 	err := p.db.Order("note asc").Preload("Params").Preload("Executor").
-		Preload("Period").Preload("Task.Params").Preload("Day").Find(&jobs).Error
+		Preload("Period").Preload("Task.Params").Find(&jobs).Error
 	if err != nil {
 		return nil, fmt.Errorf("error read jobs: %w", err)
 	}
@@ -24,7 +24,7 @@ func (p scheduleService) GetAllJobs(pageable dto.Pageable) ([]entities.Jobs, err
 func (p scheduleService) GetJobByID(id uint32) (*entities.Jobs, error) {
 	job := entities.Jobs{ID: id}
 	err := p.db.Preload("Params").Preload("Executor").Preload("Period").
-		Preload("Task.Params").Preload("Day").First(&job).Error
+		Preload("Task.Params").First(&job).Error
 	if err != nil {
 		return nil, fmt.Errorf("error read jobs: %w", err)
 	}
@@ -176,7 +176,7 @@ func (p scheduleService) DeleteJob(id uint32) error {
 func (p scheduleService) GetAllActiveJobs() ([]entities.Jobs, error) {
 	var jobs []entities.Jobs
 	err := p.db.Order("note asc").Where("active = true").Preload("Params").
-		Preload("Executor").Preload("Period").Preload("Task.Params").Preload("Day").Find(&jobs).Error
+		Preload("Executor").Preload("Period").Preload("Task.Params").Find(&jobs).Error
 	if err != nil {
 		return nil, fmt.Errorf("error read jobs: %w", err)
 	}
@@ -192,18 +192,9 @@ func (p scheduleService) GetAllPeriods(pageable dto.Pageable) ([]entities.Period
 	return periods, nil
 }
 
-func (p scheduleService) GetAllDays(pageable dto.Pageable) ([]entities.Days, error) {
-	var days []entities.Days
-	err := p.db.Find(&days).Error
-	if err != nil {
-		return nil, fmt.Errorf("error read days: %w", err)
-	}
-	return days, nil
-}
-
 func (p scheduleService) GetAllExecutors(pageable dto.Pageable) ([]entities.Executors, error) {
 	var executors []entities.Executors
-	err := p.db.Find(&executors).Error
+	err := p.db.Order("idx asc").Find(&executors).Error
 	if err != nil {
 		return nil, fmt.Errorf("error read executors: %w", err)
 	}

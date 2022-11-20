@@ -14,7 +14,6 @@ func (p scheduleAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	schedule.POST("/job/edit", p.EditJob)
 	schedule.DELETE("/job/:id", p.DelJob)
 	schedule.GET("/periods/get", p.GetAllPeriods)
-	schedule.GET("/days/get", p.GetAllDays)
 	schedule.GET("/executors/get", p.GetAllExecutors)
 
 	schedule.GET("/cron/get", p.GetCronJobs)

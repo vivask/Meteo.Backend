@@ -34,7 +34,7 @@ func NewWebAPI(db *gorm.DB) WebAPI {
 		proxy:     proxy.NewProxyAPI(db),
 		schedule:  schedule.NewScheduleAPI(db),
 		sshclient: sshclient.NewSshClientAPI(db),
-		database:  database.NewSshClientAPI(db),
+		database:  database.NewDatabaseAPI(db),
 		esp32:     esp32.NewEsp32API(db),
 		radius:    radius.NewRadiusAPI(db),
 		server:    server.NewServerAPI(),

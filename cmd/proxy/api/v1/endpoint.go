@@ -18,5 +18,6 @@ func (p proxyAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	proxy.POST("/adblock/load", p.AdBlockLoad)
 	proxy.POST("/adblock/update", p.AdBlockUpdate)
 	proxy.PUT("/zones/update", p.ReloadZones)
+	proxy.PUT("/unlocker/reload", p.ReloadUnlocker)
 	proxy.GET("/health", p.GetHealth)
 }

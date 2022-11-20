@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"meteo/internal/log"
 	"time"
 )
 
@@ -61,6 +62,14 @@ func (d DateTime) Time() string {
 	return d.ts
 }
 
+func (d DateTime) Day() (int, error) {
+	stamp, err := d.Parse()
+	if err != nil {
+		return -1, fmt.Errorf("parse error: %w", err)
+	}
+	return stamp.Day(), nil
+}
+
 func (d DateTime) Stamp() (dt time.Time, err error) {
 	ds := d.ds
 	if len(d.ds) == 0 {
@@ -98,13 +107,6 @@ func (d DateTime) Parse() (dt time.Time, err error) {
 	return dt, nil
 }
 
-func getNumWeekOfMonth(dt time.Time) int {
-	beginningOfTheMonth := time.Date(dt.Year(), dt.Month(), 1, 1, 1, 1, 1, time.UTC)
-	_, thisWeek := dt.ISOWeek()
-	_, beginningWeek := beginningOfTheMonth.ISOWeek()
-	return 1 + thisWeek - beginningWeek
-}
-
 func concatDateTime(dt time.Time, ts string) (time.Time, error) {
 	ds := dt.Format("2006-01-02")
 	dts := fmt.Sprintf("%s %s", ds, ts)
@@ -115,54 +117,57 @@ func concatDateTime(dt time.Time, ts string) (time.Time, error) {
 	return dt, nil
 }
 
-func getNumDayOfWeek(dt time.Time) int {
-	num := int(dt.Weekday())
-	if num == 0 {
-		num = 7
-	}
-	return num
-}
+func getWeekDateStartJob(repeat int, dt *DateTime) (time.Time, error) {
 
-func getNextDateStartJob(day_of_week, repeat int, ts, tag string) (time.Time, error) {
+	stamp, err := dt.Parse()
+	if err != nil {
+		return stamp, fmt.Errorf("stamp error: %w", err)
+	}
 
 	now := time.Now()
-	target, err := concatDateTime(now, ts)
+	if now.Unix() < stamp.Unix() {
+		return stamp, nil
+	}
+
+	addDays := repeat * 7
+	next := stamp.AddDate(0, 0, addDays)
+	for {
+		if next.Unix() > now.Unix() {
+			break
+		}
+		next = next.AddDate(0, 0, addDays)
+	}
+	target, err := concatDateTime(next, dt.ts)
 	if err != nil {
 		return target, fmt.Errorf("concatDateTime error: %w", err)
 	}
-
-	numDayOfWeek := getNumDayOfWeek(now)
-	if numDayOfWeek == day_of_week && getNumWeekOfMonth(now) == repeat && now.Unix() < target.Unix() {
-		return target, nil
-	}
-	//s.logger.Debugf("[%s]: %v, DayOfWeek: %d, NumWeek: %d", tag, now, numDayOfWeek, getNumWeekOfMonth(now))
-	for {
-		now = now.AddDate(0, 0, 1)
-		numDayOfWeek := getNumDayOfWeek(now)
-		//s.logger.Debugf("[%s]: %v, DayOfWeek: %d, NumWeek: %d", tag, now, numDayOfWeek, getNumWeekOfMonth(now))
-		if numDayOfWeek == day_of_week && getNumWeekOfMonth(now) == repeat {
-			target, err := concatDateTime(now, ts)
-			if err != nil {
-				return target, fmt.Errorf("concatDateTime error: %w", err)
-			}
-			return target, nil
-		}
-	}
+	return target, nil
 }
 
-func getNextYearStartJob(repeat int, dt *DateTime) (time.Time, error) {
+func getYearDateStartJob(repeat int, dt *DateTime) (time.Time, error) {
+
 	stamp, err := dt.Parse()
-	now := time.Now()
 	if err != nil {
-		return now, fmt.Errorf("date time parse error: %w", err)
+		return stamp, fmt.Errorf("stamp error: %w", err)
 	}
 
-	tn := time.Date(stamp.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(), now.Nanosecond(), stamp.Location())
-	delta := (now.Year() - stamp.Year()) % repeat
-	if tn.Unix() > stamp.Unix() {
-		delta++
+	now := time.Now()
+	if now.Unix() < stamp.Unix() {
+		log.Infof("Start At stamp: %v", stamp)
+		return stamp, nil
 	}
-	target := time.Date(now.Year()+delta, stamp.Month(), stamp.Day(), stamp.Hour(), stamp.Minute(), stamp.Second(), 0, stamp.Location())
 
+	next := stamp.AddDate(repeat, 0, 0)
+	for {
+		if next.Unix() > now.Unix() {
+			break
+		}
+		next = next.AddDate(repeat, 0, 0)
+	}
+	target, err := concatDateTime(next, dt.ts)
+	if err != nil {
+		return target, fmt.Errorf("concatDateTime error: %w", err)
+	}
+	log.Infof("Start At target: %v", target)
 	return target, nil
 }

@@ -3,6 +3,7 @@ package Ssh
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"meteo/internal/log"
 	"time"
 
@@ -15,13 +16,19 @@ func (p sshlink) Config() *ssh.ClientConfig {
 }
 
 func (p sshlink) Close() {
-	p.connection.Close()
-	p.session.Close()
+	p.conn.Close()
 }
 
 func (p sshlink) Exec(cmd string, wait time.Duration) (req string, err error) {
+
+	session, err := p.conn.NewSession()
+	if err != nil {
+		return req, fmt.Errorf("ssh session error: %w", err)
+	}
+	defer session.Close()
+
 	var stdout bytes.Buffer
-	p.session.Stdout = &stdout
+	session.Stdout = &stdout
 
 	timeout := wait * time.Second
 
@@ -31,12 +38,14 @@ func (p sshlink) Exec(cmd string, wait time.Duration) (req string, err error) {
 
 	g.Go(func() error {
 		log.Debugf("CMD: %s", cmd)
-		return p.session.Run(cmd)
+		return session.Run(cmd)
 	})
 
 	hostUsed(p.host)
 
-	return stdout.String(), g.Wait()
+	err = g.Wait()
+
+	return stdout.String(), err
 }
 
 func (p sshlink) ExecPack(commands []string, wait, pause time.Duration) error {
@@ -49,8 +58,14 @@ func (p sshlink) ExecPack(commands []string, wait, pause time.Duration) error {
 
 	g.Go(func() error {
 		for _, cmd := range commands {
+			session, err := p.conn.NewSession()
+			if err != nil {
+				return fmt.Errorf("ssh session error: %w", err)
+			}
+			defer session.Close()
+
 			log.Debugf("CMD: %s", cmd)
-			err := p.session.Run(cmd)
+			err = session.Run(cmd)
 			if err != nil {
 				return err
 			}

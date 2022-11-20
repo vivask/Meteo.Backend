@@ -19,7 +19,7 @@ type ProxyService interface {
 	EditManualToVpn(host entities.ToVpnManual) error
 	DelManualFromVpn(id uint32) error
 	GetAccessLists(pageable dto.Pageable) (*[]entities.AccesList, error)
-	AddAutoToVpn(host *entities.ToVpnAuto) error
+	AddAutoToVpn(host entities.ToVpnAuto) error
 	DelAutoFromVpn(hosts []entities.ToVpnAuto) error
 	GetAllIgnoreAutoToVpn(pageable dto.Pageable) (*[]entities.ToVpnIgnore, error)
 	IgnoreAutoToVpn(hosts []entities.ToVpnAuto) error
