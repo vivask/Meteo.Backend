@@ -1,6 +1,6 @@
 FROM golang:alpine3.16 as gobuilder
 
-ENV GIN_MODE=release
+ENV GIN_MODE=debug
 
 RUN apk add git
 RUN apk add --update gcc musl-dev
@@ -15,7 +15,7 @@ ADD . /app
 RUN go build -o ./web ./cmd/web
 
 FROM alpine:3.16
-ENV GIN_MODE=release
+ENV GIN_MODE=debug
 RUN apk --no-cache add ca-certificates tzdata curl
 ENV TZ="Europe/Minsk"
 WORKDIR /usr/source/app/

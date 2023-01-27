@@ -2,6 +2,7 @@ package v1
 
 import (
 	"meteo/internal/entities"
+	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"net/http"
 
@@ -23,11 +24,7 @@ func (p proxyAPI) GetState(c *gin.Context) {
 func (p proxyAPI) SetStart(c *gin.Context) {
 	err := p.Start()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "PROXYEER",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)

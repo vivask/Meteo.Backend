@@ -42,7 +42,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file (default is $PWD/config/default.yaml)")
 	startCmd.PersistentFlags().Int("port", 11000, "Port to run Application server on")
 	startCmd.PersistentFlags().BoolVarP(&enablePprof, "pprof", "p", false, "enable pprof mode (default: false)")
-	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", true, "enable auto migrate (default: false)")
+	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", false, "enable auto migrate (default: false)")
 	config.Viper().BindPFlag("port", startCmd.PersistentFlags().Lookup("port"))
 }
 
@@ -101,12 +101,12 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 		pprof.Register(router, "monitor/pprof")
 	}
 
-	apiV1Router := router.Group("/api/v1")
+	apiV1Router := router.Group(config.Default.App.Api)
 	RegisterAPIV1(apiV1Router, db)
 
 	// run the rest server
-	var address = config.Default.Proxy.Rest.Bind
-	var port = config.Default.Proxy.Rest.Port
+	var address = config.Default.Proxy.Api.Bind
+	var port = config.Default.Proxy.Api.Port
 	if port > 0 {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
@@ -116,7 +116,7 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 	go func() {
 		tlsMinVersion := tls.VersionTLS12
 
-		caCert, err := os.ReadFile(config.Default.Proxy.Rest.Ca)
+		caCert, err := os.ReadFile(config.Default.Proxy.Api.Ca)
 		if err != nil {
 			log.Fatalf("error read CA: %w", err)
 		}
@@ -136,7 +136,7 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 			Handler:   router,
 		}
 		log.Infof("starting %s server on: https://%s", config.Default.Proxy.Title, address)
-		if err := srv.ListenAndServeTLS(config.Default.Proxy.Rest.Crt, config.Default.Proxy.Rest.Key); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(config.Default.Proxy.Api.Crt, config.Default.Proxy.Api.Key); err != nil && err != http.ErrServerClosed {
 			log.Error(fmt.Sprintf("listen: %s", err))
 		}
 	}()

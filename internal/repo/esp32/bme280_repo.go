@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"meteo/internal/dto"
 	"meteo/internal/entities"
 	"meteo/internal/kit"
 	"meteo/internal/utils"
@@ -90,4 +91,148 @@ func (p esp32Service) Bme280TemperatureChk() error {
 		return fmt.Errorf("update settings error: %w", err)
 	}
 	return nil
+}
+
+func (p esp32Service) GetBmx280MinByHours(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	MIN(press) press, MIN(tempr) tempr, MIN(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280MaxByHours(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	MAX(press) press, MAX(tempr) tempr, MAX(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280AvgByHours(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	AVG(press) press, AVG(tempr) tempr, AVG(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280MinByDays(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	MIN(press) press, MIN(tempr) tempr, MIN(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280MaxByDays(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	MAX(press) press, MAX(tempr) tempr, MAX(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280AvgByDays(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	AVG(press) press, AVG(tempr) tempr, AVG(hum) hum
+	FROM bmx280
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280MinByMonths(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	MIN(press) press, MIN(tempr) tempr, MIN(hum) hum
+	FROM bmx280
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280MaxByMonths(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	MAX(press) press, MAX(tempr) tempr, MAX(hum) hum
+	FROM bmx280
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
+}
+
+func (p esp32Service) GetBmx280AvgByMonths(period dto.Period) ([]entities.Bmx280, error) {
+
+	var bmx280 []entities.Bmx280
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	AVG(press) press, AVG(tempr) tempr, AVG(hum) hum
+	FROM bmx280
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&bmx280).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read bmx280: %w", err)
+	}
+	return bmx280, err
 }

@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: ./docker/messanger/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/messanger/health || echo 1
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/messanger/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -76,7 +76,7 @@ services:
       context: .
       dockerfile: ./docker/proxy/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/proxy/health || echo 1
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/proxy/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -105,7 +105,7 @@ services:
       context: .
       dockerfile: ./docker/sshclient/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/sshclient/health || echo 1
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/sshclient/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -133,7 +133,7 @@ services:
       context: .
       dockerfile: ./docker/schedule/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/schedule/health || echo 1
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/schedule/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -161,7 +161,7 @@ services:
       context: .
       dockerfile: ./docker/esp32/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/esp32/health || echo 1
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/esp32/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -177,23 +177,22 @@ services:
     command: sh -c "wait-for postgres:${DB_PORT} -- echo 'cluster is up' && esp32 start -c /run/secrets/config.yaml"
     networks:
      - app-network
-  server:
-    container_name: server
+  media:
+    container_name: media
     working_dir: /usr/source/app
     restart: always
-    depends_on:
-      - postgres
     hostname: media
     privileged: true
     network_mode: host
+    environment:
+      MEDIA_DEV: "/dev/sdb1"
     build:
       context: .
       secrets:
         - samba_env
-        - radius_env
-      dockerfile: ./docker/server/chatreey/Dockerfile
+      dockerfile: ./docker/media/Dockerfile
     healthcheck:
-      test: curl -sS http://127.0.0.1:25000/api/v1/server/health || echo 1
+      test: curl -sS http://127.0.0.1:25000/api/v1/media/health | grep -q healthy || echo 1
       interval: 15s
       timeout: 10s
       retries: 3
@@ -204,16 +203,78 @@ services:
       - server.key
       - client.crt
       - client.key
-      - db_password
     volumes:
       - /media/samba:/media/samba/
       - /etc/samba:/etc/samba/
       - /etc/transmission-daemon:/etc/transmission-daemon/
-      - /var/log/radius:/var/log/radius
       - /var/log/samba:/var/log/samba
       - /var/log/transmission:/var/log/transmission
       - /var/log/backend:/var/log/backend
-    command: sh -c "wait-for 127.0.0.1:${DB_PORT} -- echo 'cluster is up' && server start -c /run/secrets/config.yaml"
+    command: media start -c /run/secrets/config.yaml
+  radius:
+    container_name: radius
+    working_dir: /usr/source/app
+    restart: always
+    depends_on:
+      - cluster
+    cap_add:
+      - NET_ADMIN
+    build:
+      context: .
+      secrets:
+        - radius_env
+      dockerfile: ./docker/radius/chatreey/Dockerfile
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+      - "${RADIUS_PORT}:${RADIUS_PORT}"
+    healthcheck:
+      test: curl -sS http://127.0.0.1:${HEALTH_PORT}/api/v1/radius/health | grep -q healthy || echo 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/radius:/var/log/radius
+      - /var/log/backend:/var/log/backend
+    command: sh -c "wait-for ${MAIN}:${CLUSTER_PORT} -- echo 'cluster is up' && radius start -c /run/secrets/config.yaml"
+    networks:
+     - app-network
+  nut:
+    container_name: nut
+    working_dir: /usr/source/app
+    privileged: true
+    restart: always
+    build:
+      context: .
+      secrets:
+        - nut_env
+      dockerfile: ./docker/nut/Dockerfile
+    ports:
+      - "${NUT_PORT}:${NUT_PORT}"
+    healthcheck:
+      test: upsc powercom@localhost:3493 | grep -q "POWERCOM Co.,LTD" || kill 1
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    secrets:
+      - config.yaml
+      - ca.crt
+      - server.crt
+      - server.key
+      - client.crt
+      - client.key
+    volumes:
+      - /var/log/backend:/var/log/backend
+    command: nut start -c /run/secrets/config.yaml
+    networks:
+     - app-network
   web:
     container_name: web
     working_dir: /usr/source/app
@@ -277,9 +338,33 @@ services:
       POSTGRES_DB: "/run/secrets/db_name"
       POSTGRES_USER: "/run/secrets/db_user"
       POSTGRES_PASSWORD: "/run/secrets/db_password"
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "shared_buffers=500MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "temp_file_limit=10GB"
+      - "-c"
+      - "log_min_duration_statement=200ms"
+      - "-c"
+      - "idle_in_transaction_session_timeout=10s"
+      - "-c"
+      - "lock_timeout=1s"
+      - "-c"
+      - "statement_timeout=60s"
     volumes:
       - meteo-db:/var/lib/postgresql/data
-      - ./import:/import:rw
+      - import-db:/var/lib/postgresql/import
       - /var/log/postgresql:/var/log/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U `cat /run/secrets/db_user` -d `cat /run/secrets/db_name`"]
@@ -295,8 +380,33 @@ services:
           memory: 2G
     networks:
       - app-network
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:6.18
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "/run/secrets/pgadmin_mail"
+      PGADMIN_DEFAULT_PASSWORD: "/run/secrets/pgadmin_password"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-db:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - app-network
 volumes:
   meteo-db:
+    driver: local
+  import-db:
+    driver: local
+  pgadmin-db:
     driver: local
   gogs-data:
     driver: local
@@ -310,7 +420,7 @@ secrets:
   db_password:
     file: ./docker/secrets/db_password.txt
   config.yaml:
-    file: /etc/backend/default.yaml
+    file: /etc/backend/chatreey.yaml
   ca.crt:
     file: ./certs/ca.crt
   server.crt:
@@ -322,6 +432,12 @@ secrets:
   client.key:
     file: ./certs/client.key
   radius_env:
-    file: ./docker/secrets/radius.env
+    file: ./docker/secrets/ch.radius.env
   samba_env:
     file: ./docker/secrets/samba.env
+  pgadmin_mail:
+    file: ./docker/secrets/pgadmin_mail.txt
+  pgadmin_password:
+    file: ./docker/secrets/pgadmin_password.txt
+  nut_env:
+    file: ./docker/secrets/nut.env

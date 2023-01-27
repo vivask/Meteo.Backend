@@ -14,7 +14,7 @@ type Settings struct {
 	ID                    uint32    `gorm:"column:id;primaryKey" json:"id"`
 	ValveState            bool      `gorm:"column:valve_state;not null;default:false" json:"valve_state"`
 	ValveDisable          bool      `gorm:"column:valve_disable;not null;default:false" json:"valve_disable"`
-	MinTempn              float64   `gorm:"column:min_temp;not null;default:9.0" json:"min_temp"`
+	MinTemp               float64   `gorm:"column:min_temp;not null;default:9.0" json:"min_temp"`
 	MaxTemp               float64   `gorm:"column:max_temp;not null;default:12.0" json:"max_temp"`
 	CCS811Baseline        int       `gorm:"column:ccs811_baseline;not null;default:0" json:"CCS811_baseline"`
 	Firmware              string    `gorm:"column:firmware;not null;default:'_EMPTY_'" json:"firmware"`
@@ -23,7 +23,7 @@ type Settings struct {
 	SetupStatus           bool      `gorm:"column:setup_status;not null;default:true" json:"setup_status"`
 	Reboot                bool      `gorm:"column:reboot;not null;default:false" json:"reboot"`
 	Rebooted              bool      `gorm:"column:rebooted;not null;default:true" json:"rebooted"`
-	MaxCh2o               int       `gorm:"column:max_ch2o;not null;default:150" json:"max_ch2o"`
+	MaxCh2o               float64   `gorm:"column:max_ch2o;not null;default:150" json:"max_ch2o"`
 	MaxCh2oAlarm          bool      `gorm:"column:max_ch2o_alarm;not null;default:false" json:"max_ch2o_alarm"`
 	MaxDs18b20            float64   `gorm:"column:max_ds18b20;not null;default:30.0" json:"max_ds18b20"`
 	MinDs18b20            float64   `gorm:"column:min_ds18b20;not null;default:8.0" json:"min_ds18b20"`
@@ -78,12 +78,12 @@ type HomePage struct {
 	Mics6814CreatedAt   time.Time `json:"mics6814_created"`
 	RadsensDynamic      float64   `json:"radsens_dynamic"`
 	RadsensStatic       float64   `json:"radsens_static"`
-	RadsensPulse        int       `json:"radsens_pulse"`
+	RadsensPulse        float64   `json:"radsens_pulse"`
 	MaxRadStatAlarm     bool      `json:"max_rad_stat_alarm"`
 	MaxRadDynAlarm      bool      `json:"max_rad_dyn_alarm"`
 	RadsensHVState      bool      `json:"radsens_hv_state"`
 	RadsensCreatedAt    time.Time `json:"radsens_created"`
-	Ze08Ch2o            int       `json:"ze08_ch2o"`
+	Ze08Ch2o            float64   `json:"ze08_ch2o"`
 	MaxCh2oAlarm        bool      `json:"max_ch2o_alarm"`
 	Ze08CreatedAt       time.Time `json:"ze08_created"`
 	Esp32DateTimeNow    time.Time `json:"esp32_date_time_now"`

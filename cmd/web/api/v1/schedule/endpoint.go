@@ -4,22 +4,22 @@ import "github.com/gin-gonic/gin"
 
 func (p scheduleAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	schedule := router.Group("/schedule")
-	schedule.GET("/tasks/get", p.GetAllTasks)
-	schedule.POST("/task/add", p.AddTask)
-	schedule.POST("/task/edit", p.EditTask)
-	schedule.DELETE("/task/:id", p.DelTask)
+	schedule.GET("/tasks", p.GetAllTasks)
+	schedule.PUT("/tasks", p.AddTask)
+	schedule.POST("/tasks", p.EditTask)
+	schedule.DELETE("/tasks/:id", p.DelTask)
+	schedule.PUT("/task/run", p.RunTask)
 
-	schedule.GET("/jobs/get", p.GetAllJobs)
-	schedule.POST("/job/add", p.AddJob)
-	schedule.POST("/job/edit", p.EditJob)
-	schedule.DELETE("/job/:id", p.DelJob)
-	schedule.GET("/periods/get", p.GetAllPeriods)
-	schedule.GET("/executors/get", p.GetAllExecutors)
+	schedule.GET("/jobs", p.GetAllJobs)
+	schedule.PUT("/jobs", p.AddJob)
+	schedule.POST("/jobs", p.EditJob)
+	schedule.DELETE("/jobs/:id", p.DelJob)
+	schedule.GET("/periods", p.GetAllPeriods)
+	schedule.GET("/executors", p.GetAllExecutors)
 
-	schedule.GET("/cron/get", p.GetCronJobs)
+	schedule.GET("/cron", p.GetCronJobs)
 
 	schedule.PUT("/job/activate/:id", p.ActivateJob)
 	schedule.PUT("/job/deactivate/:id", p.DeactivateJob)
 	schedule.PUT("/job/run/:id", p.RunJob)
-
 }

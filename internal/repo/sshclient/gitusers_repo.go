@@ -7,13 +7,13 @@ import (
 	"meteo/internal/utils"
 )
 
-func (p sshclientService) AddGitUser(gitUser entities.GitUsers) error {
+func (p sshclientService) AddGitUser(gitUser entities.GitUsers) (uint32, error) {
 	gitUser.ID = utils.HashNow32()
 	err := p.db.Omit("UpdatedAt").Create(&gitUser).Error
 	if err != nil {
-		return fmt.Errorf("error insert git_users: %w", err)
+		return 0, fmt.Errorf("error insert git_users: %w", err)
 	}
-	return nil
+	return gitUser.ID, nil
 }
 
 func (p sshclientService) EditGitUser(user entities.GitUsers) error {

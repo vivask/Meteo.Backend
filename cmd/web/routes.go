@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	auth "meteo/internal/api/v1/auth"
+	auth "meteo/cmd/web/api/v1/auth"
+	"meteo/internal/config"
 	"meteo/internal/errors"
 	"meteo/internal/log"
 
@@ -78,7 +79,7 @@ func SetupRouter(db *gorm.DB, ui string) *gin.Engine {
 		pprof.Register(public, "monitor/pprof")
 		log.Infof("Monitor pprof enabled")
 	}
-	apiV1Router := public.Group("/api/v1")
+	apiV1Router := public.Group(config.Default.App.Api)
 	RegisterPublicAPIV1(apiV1Router, db)
 	// use swagger middleware to serve the API docs
 	public.GET("/doc/*any", swagger.WrapHandler(swaggerfiles.Handler))

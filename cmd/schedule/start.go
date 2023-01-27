@@ -100,12 +100,12 @@ func startSchedule(cmd *cobra.Command, agrs []string) {
 	if enablePprof {
 		pprof.Register(router, "monitor/pprof")
 	}
-	apiV1Router := router.Group("/api/v1")
+	apiV1Router := router.Group(config.Default.App.Api)
 	RegisterAPIV1(apiV1Router, db)
 
 	// run the rest server
-	var address = config.Default.Schedule.Bind
-	var port = config.Default.Schedule.Port
+	var address = config.Default.Schedule.Api.Bind
+	var port = config.Default.Schedule.Api.Port
 	if port > 0 {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
@@ -115,7 +115,7 @@ func startSchedule(cmd *cobra.Command, agrs []string) {
 	go func() {
 		tlsMinVersion := tls.VersionTLS12
 
-		caCert, err := os.ReadFile(config.Default.Schedule.Ca)
+		caCert, err := os.ReadFile(config.Default.Schedule.Api.Ca)
 		if err != nil {
 			log.Fatalf("error read CA: %w", err)
 		}
@@ -135,7 +135,7 @@ func startSchedule(cmd *cobra.Command, agrs []string) {
 			Handler:   router,
 		}
 		log.Infof("starting %s server on: https://%s", config.Default.Schedule.Title, address)
-		if err := srv.ListenAndServeTLS(config.Default.Schedule.Crt, config.Default.Schedule.Key); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(config.Default.Schedule.Api.Crt, config.Default.Schedule.Api.Key); err != nil && err != http.ErrServerClosed {
 			log.Error(fmt.Sprintf("listen: %s", err))
 		}
 	}()

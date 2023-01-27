@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"meteo/internal/config"
 	"meteo/internal/entities"
+	"meteo/internal/errors"
 	"net/http"
 	"os"
 	"regexp"
@@ -17,21 +18,13 @@ func (p mikrotikAPI) RouterSyncDNS(c *gin.Context) {
 
 	var hosts []entities.Homezone
 	if err := c.ShouldBind(&hosts); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest,
-			gin.H{
-				"code":    http.StatusBadRequest,
-				"error":   "SSHERR",
-				"message": "Invalid inputs. Please check your inputs"})
+		c.Error(errors.NewError(http.StatusBadRequest, errors.ErrInvalidInputs))
 		return
 	}
 
 	err := p.SyncDNS(&hosts)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)

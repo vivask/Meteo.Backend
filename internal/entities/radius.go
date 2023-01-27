@@ -34,6 +34,8 @@ type Radacct struct {
 	FramedInterfaceId   string    `gorm:"column:framedinterfaceid;"`
 	DelegatedIPv6Prefix string    `gorm:"column:delegatedipv6prefix;"`
 	Class               string    `gorm:"column:class;index:radacct_calss_idx"`
+	Valid               string    `gorm:"->;-:migration" json:"valid"`
+	Verified            string    `gorm:"->;-:migration" json:"verified"`
 }
 
 func (Radacct) TableName() string {
@@ -139,22 +141,4 @@ type Radverified struct {
 
 func (Radverified) TableName() string {
 	return "radverified"
-}
-
-type Acct struct {
-	RadAcctId        int       `gorm:"column:radacctid" json:"id"`
-	UserName         string    `gorm:"column:username" json:"username"`
-	NASIPAddress     string    `gorm:"column:nasipaddress" json:"nasipaddress"`
-	NASPortId        string    `gorm:"column:nasportid" json:"nasportid"`
-	AcctStartTime    time.Time `gorm:"column:acctstarttime" json:"acctstarttime"`
-	AcctUpdateTime   time.Time `gorm:"column:acctupdatetime" json:"acctupdatetime"`
-	AcctStopTime     time.Time `gorm:"column:acctstoptime" json:"acctstoptime"`
-	CalledStationId  string    `gorm:"column:calledstationid" json:"calledstationid"`
-	CallingStationId string    `gorm:"column:callingstationid" json:"callingstationid"`
-	Valid            string    `gorm:"column:valid" json:"valid"`
-	Verified         string    `gorm:"column:verified" json:"verified"`
-}
-
-func (Acct) TableName() string {
-	return "accounting"
 }

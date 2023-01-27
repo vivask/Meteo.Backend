@@ -10,4 +10,5 @@ func (p mikrotikAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	mikrotik.PUT("/tovpn/manual/del", p.RemoveManualHostFromVpn)
 	mikrotik.PUT("/tovpn/auto/add", p.AddAutoHostToVpn)
 	mikrotik.PUT("/tovpn/auto/del", p.RemoveAutoHostFromVpn)
+	mikrotik.PUT("/sync/vpn", p.VpnListsSync)
 }

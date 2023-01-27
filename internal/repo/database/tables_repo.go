@@ -10,7 +10,10 @@ import (
 	"os"
 )
 
-const DELIMITER = "|"
+const (
+	DELIMITER = "|"
+	IMPORT    = "/var/lib/postgresql/import"
+)
 
 func (p databaseService) GetAllTables(pageable dto.Pageable) ([]entities.SyncTables, error) {
 	var tables []entities.SyncTables
@@ -20,7 +23,7 @@ func (p databaseService) GetAllTables(pageable dto.Pageable) ([]entities.SyncTab
 		return nil, fmt.Errorf("error read sync_tables: %w", err)
 	}
 	for idx := range tables {
-		csv := fmt.Sprintf("/import/%s.csv", tables[idx].ID)
+		csv := fmt.Sprintf("%s/%s.csv", IMPORT, tables[idx].ID)
 		if _, err := os.Stat(csv); !errors.Is(err, os.ErrNotExist) {
 			tables[idx].IsImport = true
 		}
@@ -85,11 +88,25 @@ func (p databaseService) DelTable(id string) error {
 
 func (p databaseService) DelTables(tables []entities.SyncTables) error {
 	tx := p.db.Begin()
-	log.Infof("TABLES: %v", tables)
 	err := tx.Delete(&tables).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error delete sync_tables: %w", err)
+	}
+	tx.Commit()
+	return nil
+}
+
+func (p databaseService) DropTables(tables []entities.SyncTables) error {
+	tx := p.db.Begin()
+	for _, table := range tables {
+		query := fmt.Sprintf("DROP TABLE %s;", table.ID)
+		log.Infof("Query: %s", query)
+		err := tx.Exec(query).Error
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error drop [%s]: %w", table.ID, err)
+		}
 	}
 	tx.Commit()
 	return nil
@@ -110,7 +127,7 @@ func (p databaseService) ImportTableContent(id string) error {
 	if err != nil {
 		return fmt.Errorf("can't read table by id [%s]: %w", id, err)
 	}
-	csv := fmt.Sprintf("/import/%s.csv", table.ID)
+	csv := fmt.Sprintf("%s/%s.csv", IMPORT, table.ID)
 	tx := p.db.Begin()
 	query := fmt.Sprintf("DELETE FROM %s;", table.ID)
 	err = tx.Exec(query).Error
@@ -136,7 +153,7 @@ func (p databaseService) ImportTablesContent(tables []entities.SyncTables) error
 		if err != nil {
 			return fmt.Errorf("can't read table by id [%s]: %w", id, err)
 		}
-		csv := fmt.Sprintf("/import/%s.csv", table.ID)
+		csv := fmt.Sprintf("%s/%s.csv", IMPORT, table.ID)
 		query := fmt.Sprintf("DELETE FROM %s;", table.ID)
 		err = tx.Exec(query).Error
 		if err != nil {
@@ -159,7 +176,7 @@ func (p databaseService) SaveTableContent(id string) error {
 	if err != nil {
 		return fmt.Errorf("can't read table by id [%s]: %w", id, err)
 	}
-	csv := fmt.Sprintf("/import/%s.csv", table.ID)
+	csv := fmt.Sprintf("%s/%s.csv", IMPORT, table.ID)
 	query := fmt.Sprintf("COPY %s TO '%s' WITH DELIMITER '%s' CSV HEADER;", table.ID, csv, DELIMITER)
 	err = p.db.Exec(query).Error
 	if err != nil {
@@ -176,7 +193,7 @@ func (p databaseService) SaveTablesContent(tables []entities.SyncTables) error {
 		if err != nil {
 			return fmt.Errorf("can't read table by id [%s]: %w", id, err)
 		}
-		csv := fmt.Sprintf("/import/%s.csv", table.ID)
+		csv := fmt.Sprintf("%s/%s.csv", IMPORT, table.ID)
 		query := fmt.Sprintf("COPY %s TO '%s' WITH DELIMITER '%s' CSV HEADER;", table.ID, csv, DELIMITER)
 		err = tx.Exec(query).Error
 		if err != nil {

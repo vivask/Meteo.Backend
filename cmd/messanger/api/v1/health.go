@@ -7,5 +7,5 @@ import (
 )
 
 func (p messangerAPI) GetHealth(c *gin.Context) {
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, "healthy")
 }

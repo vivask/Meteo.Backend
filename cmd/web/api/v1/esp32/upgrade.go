@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"mime/multipart"
 	"net/http"
@@ -20,11 +21,7 @@ func (p esp32API) UpgradeEsp32(c *gin.Context) {
 
 	file, err := c.FormFile(name)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -32,40 +29,24 @@ func (p esp32API) UpgradeEsp32(c *gin.Context) {
 	dst := fmt.Sprintf("%s/%s", UPLOAD, file.Filename)
 	err = c.SaveUploadedFile(file, dst)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
 	content, buf, err := createForm(name, dst)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
 	_, err = kit.PostFormInt("/esp32/upload", content, buf)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
 	if err := p.repo.UpgradeEsp32(file.Filename); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -75,11 +56,7 @@ func (p esp32API) UpgradeEsp32(c *gin.Context) {
 func (p esp32API) GetUpgradeStatus(c *gin.Context) {
 	status, err := p.repo.GetUpgradeStatus()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": status})
@@ -87,11 +64,7 @@ func (p esp32API) GetUpgradeStatus(c *gin.Context) {
 
 func (p esp32API) TerminateUpgrade(c *gin.Context) {
 	if err := p.repo.TerminateUpgrade(); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)

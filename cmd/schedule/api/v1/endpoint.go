@@ -8,4 +8,6 @@ func (p scheduleAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	schedule.PUT("/job/run/:id", p.JobRun)
 	schedule.GET("/cron/get", p.GetCronJobs)
 	schedule.GET("/health", p.GetHealth)
+	schedule.GET("/logging", p.GetLogging)
+	schedule.PUT("/logging", p.ClearLogging)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	Ssh "meteo/cmd/sshclient/api/v1/internal"
 	"meteo/internal/config"
+	"regexp"
 	"strings"
 )
 
@@ -103,5 +104,27 @@ func (p serverAPI) KodiStorageStart() error {
 	if err != nil {
 		return fmt.Errorf("ssh exec error: %w", err)
 	}
+	return nil
+}
+
+func (p serverAPI) StorageHealth() error {
+	address := fmt.Sprintf("%s:%d", config.Default.SshClient.Backup.Host, config.Default.SshClient.Backup.Port)
+
+	link, err := Ssh.NewSSHLink(address, config.Default.SshClient.Backup.User)
+	if err != nil {
+		return fmt.Errorf("can't create ssh link: %w", err)
+	}
+	defer link.Close()
+
+	out, err := link.Exec("df", 1)
+	if err != nil {
+		return fmt.Errorf("ssh exec error: %w", err)
+	}
+
+	matched, _ := regexp.MatchString("/storage/media", out)
+	if !matched {
+		return fmt.Errorf("storage not healthy: %s", out)
+	}
+
 	return nil
 }

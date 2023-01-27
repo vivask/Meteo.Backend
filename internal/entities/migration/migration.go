@@ -118,6 +118,10 @@ func AutoMigrate(db *gorm.DB, migrate bool) {
 		if err != nil {
 			return err
 		}
+		err = CreateAdminUser(db)
+		if err != nil {
+			return err
+		}
 		return nil
 
 	}); err != nil {

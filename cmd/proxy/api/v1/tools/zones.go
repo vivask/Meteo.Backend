@@ -1,13 +1,11 @@
 package tools
 
 import (
-	"bytes"
 	"fmt"
 	"meteo/internal/entities"
 	"meteo/internal/log"
 	repo "meteo/internal/repo/proxy"
 	"net"
-	"sort"
 	s "strings"
 
 	"github.com/mostlygeek/arp"
@@ -47,7 +45,7 @@ func (z *Zones) AddToTable(name, ip string) error {
 	if len(mac) > 0 {
 		host.Mac = mac
 	}
-	err := z.repo.AddHomeZoneHost(host)
+	_, err := z.repo.AddHomeZoneHost(host)
 	if err != nil {
 		return fmt.Errorf("create host error: %w", err)
 	}
@@ -126,7 +124,7 @@ func LoadZones(repo repo.ProxyService) (list *Zones) {
 			log.Warningf("Bad host name: %s, or ip: %s", host.Name, host.Address)
 		}
 	}
-	log.Infof("Loaded %d hosts for home zone", count)
+	log.Debugf("Loaded %d hosts for home zone", count)
 	return
 }
 
@@ -135,7 +133,7 @@ func (z *Zones) Contains(host string) bool {
 	return ok
 }
 
-func rankHosts(hosts map[string]string) HostList {
+/*func rankHosts(hosts map[string]string) HostList {
 	pl := make(HostList, len(hosts))
 	i := 0
 	for host, ip := range hosts {
@@ -147,4 +145,4 @@ func rankHosts(hosts map[string]string) HostList {
 		return bytes.Compare(pl[i].IP, pl[j].IP) < 0
 	})
 	return pl
-}
+}*/

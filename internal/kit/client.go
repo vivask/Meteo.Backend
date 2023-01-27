@@ -24,6 +24,8 @@ var remoteDead bool = false
 type confService struct {
 	port ServicePort
 	ca   string
+	crt  string
+	key  string
 }
 
 type Service struct {
@@ -38,8 +40,10 @@ var (
 	SCHEDULE  ServicePort = 12000
 	SSHCLIENT ServicePort = 13000
 	MESSANGER ServicePort = 14000
-	SERVER    ServicePort = 15000
+	RADIUS    ServicePort = 15000
+	NUT       ServicePort = 16000
 	ESP32     ServicePort = 17000
+	MEDIA     ServicePort = 18000
 )
 
 const (
@@ -59,30 +63,88 @@ func NewClient() (*Client, error) {
 		local:  config.Default.Client.Local,
 		remote: config.Default.Client.Remote,
 		clients: map[string]*Service{
-			"cluster":   GetService(confService{port: CLUSTER, ca: config.Default.Cluster.Ca}),
-			"web":       GetService(confService{port: WEB, ca: config.Default.Web.Ca}),
-			"proxy":     GetService(confService{port: PROXY, ca: config.Default.Proxy.Rest.Ca}),
-			"sshclient": GetService(confService{port: SSHCLIENT, ca: config.Default.SshClient.Ca}),
-			"messanger": GetService(confService{port: MESSANGER, ca: config.Default.Messanger.Ca}),
-			"schedule":  GetService(confService{port: SCHEDULE, ca: config.Default.Schedule.Ca}),
-			"server":    GetService(confService{port: SERVER, ca: config.Default.Server.Ca}),
-			"esp32":     GetService(confService{port: ESP32, ca: config.Default.Esp32.Ca}),
+			"cluster": GetService(confService{
+				port: CLUSTER,
+				ca:   config.Default.Cluster.Api.Ca,
+				crt:  config.Default.Cluster.Client.Crt,
+				key:  config.Default.Cluster.Client.Key,
+			}),
+			"web": GetService(confService{
+				port: WEB,
+				ca:   config.Default.Web.Ca,
+				crt:  config.Default.Cluster.Client.Crt,
+				key:  config.Default.Cluster.Client.Key,
+			}),
+			"proxy": GetService(confService{
+				port: PROXY,
+				ca:   config.Default.Proxy.Api.Ca,
+				crt:  config.Default.Proxy.Client.Crt,
+				key:  config.Default.Proxy.Client.Key,
+			}),
+			"sshclient": GetService(confService{
+				port: SSHCLIENT,
+				ca:   config.Default.SshClient.Api.Ca,
+				crt:  config.Default.SshClient.Client.Crt,
+				key:  config.Default.SshClient.Client.Key,
+			}),
+			"messanger": GetService(confService{
+				port: MESSANGER,
+				ca:   config.Default.Messanger.Api.Ca,
+				crt:  config.Default.Messanger.Client.Crt,
+				key:  config.Default.Messanger.Client.Key,
+			}),
+			"schedule": GetService(confService{
+				port: SCHEDULE,
+				ca:   config.Default.Schedule.Api.Ca,
+				crt:  config.Default.Schedule.Client.Crt,
+				key:  config.Default.Schedule.Client.Key,
+			}),
+			"radius": GetService(confService{
+				port: RADIUS,
+				ca:   config.Default.Radius.Api.Ca,
+				crt:  config.Default.Radius.Client.Crt,
+				key:  config.Default.Radius.Client.Key,
+			}),
+			"esp32": GetService(confService{
+				port: ESP32,
+				ca:   config.Default.Esp32.Api.Ca,
+				crt:  config.Default.Esp32.Client.Crt,
+				key:  config.Default.Esp32.Client.Key,
+			}),
+			"media": GetService(confService{
+				port: MEDIA,
+				ca:   config.Default.Media.Api.Ca,
+				crt:  config.Default.Media.Client.Crt,
+				key:  config.Default.Media.Client.Key,
+			}),
+			"nut": GetService(confService{
+				port: NUT,
+				ca:   config.Default.Nut.Api.Ca,
+				crt:  config.Default.Nut.Client.Crt,
+				key:  config.Default.Nut.Client.Key,
+			}),
 		},
 	}, nil
 }
 
 func readConfig() {
 	WEB = ServicePort(config.Default.Web.Port)
-	CLUSTER = ServicePort(config.Default.Cluster.Port)
-	PROXY = ServicePort(config.Default.Proxy.Rest.Port)
-	SCHEDULE = ServicePort(config.Default.Schedule.Port)
-	SSHCLIENT = ServicePort(config.Default.SshClient.Port)
-	MESSANGER = ServicePort(config.Default.Messanger.Port)
-	SERVER = ServicePort(config.Default.Server.Port)
-	ESP32 = ServicePort(config.Default.Esp32.Port)
+	CLUSTER = ServicePort(config.Default.Cluster.Api.Port)
+	PROXY = ServicePort(config.Default.Proxy.Api.Port)
+	SCHEDULE = ServicePort(config.Default.Schedule.Api.Port)
+	SSHCLIENT = ServicePort(config.Default.SshClient.Api.Port)
+	MESSANGER = ServicePort(config.Default.Messanger.Api.Port)
+	RADIUS = ServicePort(config.Default.Radius.Api.Port)
+	ESP32 = ServicePort(config.Default.Esp32.Api.Port)
+	MEDIA = ServicePort(config.Default.Media.Api.Port)
+	NUT = ServicePort(config.Default.Nut.Api.Port)
 }
 
 func GetService(c confService) *Service {
+	if len(c.ca) == 0 {
+		return nil
+	}
+
 	caCert, err := os.ReadFile(c.ca)
 	if err != nil {
 		log.Fatalf("can't read cert %s for port %d: %v", c.ca, c.port, err)
@@ -90,7 +152,7 @@ func GetService(c confService) *Service {
 
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
-	cert, err := tls.LoadX509KeyPair(config.Default.Client.Crt, config.Default.Client.Key)
+	cert, err := tls.LoadX509KeyPair(c.crt, c.key)
 	if err != nil {
 		log.Fatalf("server: loadkeys: %s", err)
 	}
@@ -152,6 +214,10 @@ func (c *Client) prepare(path string, method string, ext bool) (*params, error) 
 	}
 
 	p.service = c.clients[serviceName]
+
+	if p.service == nil {
+		return nil, fmt.Errorf("not implemented service [%s]", serviceName)
+	}
 
 	p.url = fmt.Sprintf("%s%s", c.internal(p.service.port), path)
 	if ext {

@@ -9,16 +9,16 @@ import (
 
 // SshClientService interface
 type SshClientService interface {
-	AddSshKey(sshKey entities.SshKeys) error
+	AddSshKey(sshKey entities.SshKeys) (uint32, error)
 	DelSshKey(id uint32) error
 	GetAllSshKeys(pageable dto.Pageable) ([]entities.SshKeys, error)
 	GetSshKeysByHost(host string) ([]entities.SshKeys, error)
 	DelSshHost(id uint32) error
 	GetAllSshHosts(pageable dto.Pageable) ([]entities.SshHosts, error)
-	AddSshHost(host entities.SshHosts) error
+	AddSshHost(host entities.SshHosts) (uint32, error)
 	EditSshHost(host entities.SshHosts) error
 	UpTimeSshHosts(host string) error
-	AddGitUser(gitUser entities.GitUsers) error
+	AddGitUser(gitUser entities.GitUsers) (uint32, error)
 	EditGitUser(user entities.GitUsers) error
 	DelGitUser(id uint32) error
 	GetAllGitUsers(pageable dto.Pageable) ([]entities.GitUsers, error)

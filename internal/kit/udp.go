@@ -13,7 +13,7 @@ const TIMEOUT = 50 * time.Millisecond
 const maxBufferSize = 512
 
 func UdpSend(msg string) (string, error) {
-	dst := fmt.Sprintf("%s:%d", config.Default.Client.Remote, config.Default.Cluster.Port)
+	dst := fmt.Sprintf("%s:%d", config.Default.Client.Remote, config.Default.Cluster.Api.Port)
 	raddr, err := net.ResolveUDPAddr("udp", dst)
 	if err != nil {
 		return "", fmt.Errorf("can't resolve address %s, error: %w", dst, err)

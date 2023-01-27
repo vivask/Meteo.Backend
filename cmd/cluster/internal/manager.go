@@ -3,21 +3,25 @@ package vip
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"meteo/cmd/cluster/internal/VRRP"
+	"meteo/internal/config"
 	"meteo/internal/entities"
 	"meteo/internal/kit"
 	"meteo/internal/log"
+	"net"
 	"regexp"
 	"sync"
 	"time"
 )
 
 const (
-	TIMEOUT = 100 * time.Millisecond
+	TIMEOUT = 800 * time.Millisecond
 )
 
 var (
-	leader         bool
-	aliveRemote    bool
+	leader         bool = false
+	aliveRemote    bool = false
 	healthy        bool = true
 	managerStarted bool = false
 	m              sync.Mutex
@@ -33,10 +37,12 @@ type Params struct {
 type VIPManager struct {
 	stop                chan bool
 	finished            chan bool
+	started             chan bool
 	networkConfigurator NetworkConfigurator
 	port                string
 	remoteAlive         bool
 	handler             VIPHandler
+	vr                  *VRRP.VirtualRouter
 }
 
 func NewVIPManager(networkConfigurator NetworkConfigurator, p *Params) *VIPManager {
@@ -44,6 +50,7 @@ func NewVIPManager(networkConfigurator NetworkConfigurator, p *Params) *VIPManag
 		networkConfigurator: networkConfigurator,
 		port:                p.Remote,
 		handler:             p.Handler,
+		vr:                  VRRP.NewVirtualRouter(byte(config.Default.Cluster.Vrid), config.Default.Cluster.Interface, false, VRRP.IPv4),
 	}
 }
 
@@ -64,11 +71,31 @@ func (manager *VIPManager) deleteIP(verbose bool) {
 }
 
 func (manager *VIPManager) Start(ctx context.Context, started chan bool) error {
+	//Enable VRRP
+	virtualIP, _, _ := net.ParseCIDR(fmt.Sprintf("%s/24", config.Default.Cluster.VirtualIP))
+	manager.vr.AddIPvXAddr(virtualIP)
+	manager.vr.Enroll(VRRP.Init2Master, func() {
+		log.Info("init to MASTER")
+	})
+	manager.vr.Enroll(VRRP.Backup2Master, func() {
+		log.Info("backup to MASTER")
+	})
+	manager.vr.Enroll(VRRP.Init2Master, func() {
+		log.Info("init to BACKUP")
+	})
+	manager.vr.Enroll(VRRP.Master2Backup, func() {
+		log.Info("master to BACKUP")
+	})
+	go manager.vr.StartWithEventSelector()
+
+	manager.started = started
 	manager.stop = make(chan bool, 1)
 	manager.finished = make(chan bool, 1)
 	ticker := time.NewTicker(TIMEOUT * 2)
 
-	setLeader(false)
+	if kit.IsAliveRemote() {
+		setLeader(kit.IsBackup())
+	}
 
 	manager.deleteIP(false)
 
@@ -84,23 +111,24 @@ func (manager *VIPManager) Start(ctx context.Context, started chan bool) error {
 						log.Info("Remote server is dead")
 					}
 					manager.remoteAlive = remoteAlive
-					SetAliveRemote(remoteAlive)
+				}
+
+				if kit.IsHealthyInt("/proxy/health") {
+					manager.vr.SetPriorityAndMasterAdvInterval(byte(config.Default.Cluster.Priority), time.Millisecond*800)
+				} else {
+					manager.vr.SetPriorityAndMasterAdvInterval(byte(1), time.Millisecond*800)
 				}
 
 				if manager.isRemoteDead(remoteAlive) {
-					ManagerStarted(started)
 					continue
 				}
 				if manager.isSelfMain() {
-					ManagerStarted(started)
 					continue
 				}
 				if manager.isRemoteNotLeader() {
-					ManagerStarted(started)
 					continue
 				}
 				manager.setFollowing()
-				ManagerStarted(started)
 
 			case <-manager.stop:
 			case <-ctx.Done():
@@ -130,8 +158,8 @@ func (manager *VIPManager) isRemoteDead(remoteAlive bool) bool {
 }
 
 func (manager *VIPManager) isSelfMain() bool {
-	isServicesHealthy()
-	if kit.IsMain() && healthy {
+	healthy = isServicesHealthy()
+	if kit.IsMain() && (healthy || !managerStarted) {
 		manager.setLeader()
 		return true
 	}
@@ -153,8 +181,9 @@ func (manager *VIPManager) isRemoteNotLeader() bool {
 func (manager *VIPManager) setLeader() {
 	if !IsLeader() {
 		setLeader(true)
-		log.Info("LEADING")
+		log.Infof("LEADING")
 		manager.addIP(true)
+		ManagerStarted(manager.started)
 		manager.handler(manager.remoteAlive, true)
 	}
 }
@@ -164,6 +193,7 @@ func (manager *VIPManager) setFollowing() {
 		setLeader(false)
 		log.Info("FOLLOWING")
 		manager.deleteIP(true)
+		ManagerStarted(manager.started)
 		manager.handler(manager.remoteAlive, false)
 	}
 }
@@ -172,7 +202,7 @@ func (manager *VIPManager) Stop() {
 	close(manager.stop)
 
 	<-manager.finished
-
+	manager.vr.Stop()
 	log.Debug("Virtual IP Manager stopped")
 }
 
@@ -201,34 +231,27 @@ func IsAliveRemote() bool {
 }
 
 func isServicesHealthy() bool {
-	body, err := kit.GetInt("/esp32/health")
-	if err != nil {
-		logHelathy(err.Error())
-		return false
-	}
-	if len(body) > 0 {
-		logHelathy(string(body))
+	if !kit.IsHealthyInt("/esp32/health") {
+		if healthy {
+			log.Warning("Service ESP32 not available")
+		}
 		return false
 	}
 
-	body, err = kit.GetInt("/server/health")
-	if err != nil {
-		logHelathy(err.Error())
+	if !kit.IsHealthyInt("/radius/health") {
+		if healthy {
+			log.Warning("Service Radius not available")
+		}
 		return false
 	}
-	if len(body) > 0 {
-		logHelathy(string(body))
+
+	if !kit.IsHealthyInt("/proxy/health") {
+		if healthy {
+			log.Warning("Service Proxy not available")
+		}
 		return false
 	}
-	healthy = true
 	return true
-}
-
-func logHelathy(msg string) {
-	if healthy {
-		log.Error(msg)
-	}
-	healthy = false
 }
 
 func isRemoteLeader() bool {

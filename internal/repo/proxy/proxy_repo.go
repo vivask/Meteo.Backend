@@ -15,7 +15,7 @@ type ProxyService interface {
 	GetAllAutoToVpn(pageable dto.Pageable) (*[]entities.ToVpnAuto, error)
 	GetAllManualToVpn(pageable dto.Pageable) (*[]entities.ToVpnManual, error)
 	GetManualToVpnByID(id uint32) (*entities.ToVpnManual, error)
-	AddManualToVpn(host entities.ToVpnManual) error
+	AddManualToVpn(host entities.ToVpnManual) (uint32, error)
 	EditManualToVpn(host entities.ToVpnManual) error
 	DelManualFromVpn(id uint32) error
 	GetAccessLists(pageable dto.Pageable) (*[]entities.AccesList, error)
@@ -26,7 +26,7 @@ type ProxyService interface {
 	RestoreAutoToVpn(hosts []entities.ToVpnIgnore) error
 	DelIgnoreAutoToVpn(hosts []entities.ToVpnIgnore) error
 	GetAllHomeZoneHosts() (*[]entities.Homezone, error)
-	AddHomeZoneHost(host entities.Homezone) error
+	AddHomeZoneHost(host entities.Homezone) (uint32, error)
 	EditHomeZoneHost(host entities.Homezone) error
 	DelHomeZoneHost(id uint32) error
 }

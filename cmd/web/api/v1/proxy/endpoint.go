@@ -4,7 +4,7 @@ import "github.com/gin-gonic/gin"
 
 func (p proxyAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	proxy := router.Group("/proxy")
-	proxy.GET("/status/get", p.GetProxyesState)
+	proxy.GET("/status", p.GetProxyesState)
 
 	proxy.PUT("/main/server/start", p.SetMainProxyStart)
 	proxy.PUT("/main/server/stop", p.SetMainProxyStop)
@@ -24,22 +24,22 @@ func (p proxyAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	proxy.PUT("/backup/unlock/on", p.SetBackupProxyUnlockOn)
 	proxy.PUT("/backup/unlock/off", p.SetBackupProxyUnlockOff)
 
-	proxy.GET("/zones/get", p.GetAllZones)
-	proxy.POST("/zones/add", p.AddZone)
-	proxy.POST("/zones/edit", p.EditZone)
+	proxy.GET("/zones", p.GetAllZones)
+	proxy.PUT("/zones", p.AddZone)
+	proxy.POST("/zones", p.EditZone)
 	proxy.DELETE("/zones/:id", p.DelZone)
 
-	proxy.GET("/vpnlists/get", p.GetAccessLists)
-	proxy.GET("/manualvpn/get", p.GetAllManualToVpn)
-	proxy.POST("/manualvpn/add", p.AddManualToVpn)
-	proxy.POST("/manualvpn/edit", p.EditManualToVpn)
+	proxy.GET("/vpnlists", p.GetAccessLists)
+	proxy.GET("/manualvpn", p.GetAllManualToVpn)
+	proxy.PUT("/manualvpn", p.AddManualToVpn)
+	proxy.POST("/manualvpn", p.EditManualToVpn)
 	proxy.DELETE("/manualvpn/:id", p.DelManualFromVpn)
 
-	proxy.GET("/autovpn/get", p.GetAllAutoToVpn)
-	proxy.PUT("/autovpn/ignore/", p.IgnoreAutoToVpn)
-	proxy.PUT("/autovpn/delete", p.DelAutoFromVpn)
+	proxy.GET("/autovpn", p.GetAllAutoToVpn)
+	proxy.PUT("/autovpn", p.IgnoreAutoToVpn)
+	proxy.POST("/autovpn/delete", p.DelAutoFromVpn)
 
-	proxy.GET("/ignorevpn/get", p.GetAllIgnoreAutoToVpn)
-	proxy.PUT("/ignorevpn/restore", p.RestoreAutoToVpn)
-	proxy.PUT("/ignorevpn/delete", p.DelIgnoreAutoToVpn)
+	proxy.GET("/ignorevpn", p.GetAllIgnoreAutoToVpn)
+	proxy.PUT("/ignorevpn", p.RestoreAutoToVpn)
+	proxy.POST("/ignorevpn/delete", p.DelIgnoreAutoToVpn)
 }

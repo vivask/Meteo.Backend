@@ -101,12 +101,12 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 	if enablePprof {
 		pprof.Register(router, "monitor/pprof")
 	}
-	apiV1Router := router.Group("/api/v1")
+	apiV1Router := router.Group(config.Default.App.Api)
 	RegisterAPIV1(apiV1Router, db)
 
 	// run the rest server
-	var address = config.Default.Esp32.Bind
-	var port = config.Default.Esp32.Port
+	var address = config.Default.Esp32.Api.Bind
+	var port = config.Default.Esp32.Api.Port
 	if port > 0 {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
@@ -116,7 +116,7 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 	go func() {
 		tlsMinVersion := tls.VersionTLS12
 
-		caCert, err := os.ReadFile(config.Default.Esp32.Ca)
+		caCert, err := os.ReadFile(config.Default.Esp32.Api.Ca)
 		if err != nil {
 			log.Fatalf("error read CA: %w", err)
 		}
@@ -136,7 +136,7 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 			Handler:   router,
 		}
 		log.Infof("starting %s server on: https://%s", config.Default.Esp32.Title, address)
-		if err := srv.ListenAndServeTLS(config.Default.Esp32.Crt, config.Default.Esp32.Key); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(config.Default.Esp32.Api.Crt, config.Default.Esp32.Api.Key); err != nil && err != http.ErrServerClosed {
 			log.Error(fmt.Sprintf("listen: %s", err))
 		}
 	}()

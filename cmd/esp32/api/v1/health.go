@@ -7,5 +7,5 @@ import (
 )
 
 func (p esp32API) GetHealth(c *gin.Context) {
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, "healthy")
 }

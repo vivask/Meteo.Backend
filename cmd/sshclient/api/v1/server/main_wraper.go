@@ -2,6 +2,7 @@ package server
 
 import (
 	"meteo/internal/config"
+	"meteo/internal/errors"
 	"meteo/internal/log"
 	"net/http"
 
@@ -16,11 +17,7 @@ func (p serverAPI) RestartMainCont(c *gin.Context) {
 
 	err := p.ContainerReboot(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Restart Main Server container success")
@@ -35,11 +32,7 @@ func (p serverAPI) StopMainCont(c *gin.Context) {
 
 	err := p.ContainerShutdown(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Stop server container success")
@@ -54,11 +47,7 @@ func (p serverAPI) StartMainCont(c *gin.Context) {
 
 	err := p.ContainerStart(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Start server container success")
@@ -71,13 +60,9 @@ func (p serverAPI) MainReboot(c *gin.Context) {
 	port := config.Default.SshClient.Main.Port
 	username := config.Default.SshClient.Main.User
 
-	err := p.ServerReboot(adderess, port, username)
+	err := p.ServerShutdown(adderess, port, username, "sudo systemctl reboot")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Main Server reboot success")
@@ -90,13 +75,9 @@ func (p serverAPI) MainShutdown(c *gin.Context) {
 	port := config.Default.SshClient.Main.Port
 	username := config.Default.SshClient.Main.User
 
-	err := p.ServerShutdown(adderess, port, username)
+	err := p.ServerShutdown(adderess, port, username, "sudo poweroff")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Main Server shutdown success")

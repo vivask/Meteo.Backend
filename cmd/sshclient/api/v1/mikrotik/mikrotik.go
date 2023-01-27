@@ -2,8 +2,10 @@ package mikrotik
 
 import (
 	SSH "meteo/cmd/sshclient/api/v1/internal"
+	repo "meteo/internal/repo/proxy"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type MikrotikAPI interface {
@@ -11,10 +13,11 @@ type MikrotikAPI interface {
 }
 
 type mikrotikAPI struct {
-	ssh SSH.SshClient
+	ssh  SSH.SshClient
+	repo repo.ProxyService
 }
 
 // NewMikrotikAPI get radius service instance
-func NewMikrotikAPI(c SSH.SshClient) MikrotikAPI {
-	return &mikrotikAPI{ssh: c}
+func NewMikrotikAPI(c SSH.SshClient, db *gorm.DB) MikrotikAPI {
+	return &mikrotikAPI{ssh: c, repo: repo.NewProxyService(db)}
 }

@@ -26,7 +26,7 @@ func StartupVirtualIP(ctx context.Context, started chan bool) error {
 
 	leader = false
 
-	go ListenUdpPort(ctx, config.Default.Cluster.Bind, config.Default.Cluster.Port)
+	go ListenUdpPort(ctx, config.Default.Cluster.Api.Bind, config.Default.Cluster.Api.Port)
 
 	//go ListenUdptPort(ctx, config.Default.Cluster.Bind, config.Default.Cluster.Port)
 
@@ -43,7 +43,7 @@ func StartupVirtualIP(ctx context.Context, started chan bool) error {
 		return fmt.Errorf("network failure: %w", err)
 	}
 	paramas := &Params{
-		Remote:  fmt.Sprintf("%s:%d", config.Default.Client.Remote, config.Default.Cluster.Port),
+		Remote:  fmt.Sprintf("%s:%d", config.Default.Client.Remote, config.Default.Cluster.Api.Port),
 		Handler: Handler,
 	}
 

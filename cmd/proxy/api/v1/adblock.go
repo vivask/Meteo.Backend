@@ -3,6 +3,7 @@ package v1
 import (
 	"meteo/cmd/proxy/api/v1/tools"
 	"meteo/internal/config"
+	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"meteo/internal/log"
 	"net/http"
@@ -28,11 +29,7 @@ func (p proxyAPI) AdBlockUpdate(c *gin.Context) {
 	data := map[string]struct{}{}
 
 	if err := c.ShouldBind(&data); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest,
-			gin.H{
-				"code":    http.StatusBadRequest,
-				"error":   "PROXYERR",
-				"message": "Invalid inputs. Please check your inputs"})
+		c.Error(errors.NewError(http.StatusBadRequest, errors.ErrInvalidInputs))
 		return
 	}
 	p.dns.SetBlackListData(data)

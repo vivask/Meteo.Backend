@@ -7,9 +7,9 @@ type User struct {
 	Username  string    `gorm:"column:username;unique;not null;size:45" json:"username"`
 	Email     string    `gorm:"column:email;unique;not null;size:255" json:"email"`
 	Password  string    `gorm:"column:password;not null;size:255" json:"password"`
-	Token     string    `gorm:"column:tokenhash;not null;size:255" json:"tokenhash"`
 	CreatedAt time.Time `gorm:"column:createdat;not null;default:CURRENT_TIMESTAMP" json:"createdat"`
 	UpdatedAt time.Time `gorm:"column:updatedat" json:"updatedat"`
+	Aproved   bool      `gorm:"column:aproved" json:"aproved"`
 }
 
 func (User) TableName() string {

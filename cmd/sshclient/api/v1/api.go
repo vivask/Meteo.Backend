@@ -26,6 +26,6 @@ func NewSshClientAPI(db *gorm.DB) SshClientAPI {
 	return &sshclientAPI{
 		ssh:      ssh,
 		server:   server.NewServerAPI(ssh),
-		mikrotik: mikrotik.NewMikrotikAPI(ssh),
+		mikrotik: mikrotik.NewMikrotikAPI(ssh, db),
 	}
 }

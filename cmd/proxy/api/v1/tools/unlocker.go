@@ -25,12 +25,12 @@ func NewUnlocker(r repo.ProxyService) *Unlocker {
 }
 
 func (un *Unlocker) LoadHosts() (unlocked int, ignorered int) {
-	hosts, err := un.repo.GetAllAutoToVpn(dto.Pageable{})
+	auto, err := un.repo.GetAllAutoToVpn(dto.Pageable{})
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	for _, host := range *hosts {
+	for _, host := range *auto {
 		name := host.ID
 		if !strings.HasSuffix(name, ".") {
 			name += "."
@@ -38,6 +38,21 @@ func (un *Unlocker) LoadHosts() (unlocked int, ignorered int) {
 		un.unlocked[name] = struct{}{}
 		unlocked++
 	}
+
+	manual, err := un.repo.GetAllManualToVpn(dto.Pageable{})
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	for _, host := range *manual {
+		name := host.Name
+		if !strings.HasSuffix(name, ".") {
+			name += "."
+		}
+		un.unlocked[name] = struct{}{}
+		unlocked++
+	}
+
 	ignor, err := un.repo.GetAllIgnoreAutoToVpn(dto.Pageable{})
 	if err != nil {
 		log.Error(err)
@@ -84,7 +99,7 @@ func LoadUnlocker(repo repo.ProxyService) *Unlocker {
 
 	list := NewUnlocker(repo)
 	unlocked, ignored := list.LoadHosts()
-	log.Info("Loaded ", unlocked, " unlocked hosts from database, ignore: ", ignored)
+	log.Debugf("Loaded ", unlocked, " unlocked hosts from database, ignore: ", ignored)
 	return list
 }
 

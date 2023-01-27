@@ -6,7 +6,9 @@ import (
 	"meteo/internal/entities"
 	"meteo/internal/log"
 	"meteo/internal/utils"
+	"time"
 
+	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
 )
 
@@ -164,12 +166,40 @@ func CreateHealthRadiusUser(db *gorm.DB) error {
 		types := []entities.Radcheck{
 			{
 				Id:        utils.HashNow32(),
-				UserName:  config.Default.Server.Radius.HealthUser,
+				UserName:  config.Default.Radius.HealthUser,
 				Attribute: "Cleartext-Password",
 				Op:        ":=",
-				Value:     config.Default.Server.Radius.HealthPasswd},
+				Value:     config.Default.Radius.HealthPasswd,
+			},
 		}
 		err := db.Create(&types).Error
+		if err != nil {
+			return fmt.Errorf("insert radcheck error: %w", err)
+		}
+		log.Debugf("save radcheck: initialize")
+	}
+
+	return nil
+
+}
+
+func CreateAdminUser(db *gorm.DB) error {
+
+	if db.First(&entities.User{}).Error == gorm.ErrRecordNotFound {
+		id, _ := uuid.NewV4()
+		password, _ := utils.HashPassword("kr0k0dil")
+		user := []entities.User{
+			{
+				ID:        id.String(),
+				Username:  "admin",
+				Email:     "viktor.vasiuk@gmail.com",
+				Password:  password,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				Aproved:   true,
+			},
+		}
+		err := db.Create(&user).Error
 		if err != nil {
 			return fmt.Errorf("insert radcheck error: %w", err)
 		}

@@ -20,14 +20,17 @@ func syncCreate(db *gorm.DB) {
 		log.Error(err)
 		return
 	}
+
 	if _, ok := ignoreSync[tblName]; ok {
 		return
 	}
 
-	_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
+	if kit.IsAliveRemote() {
+		_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
 
-	if err != nil {
-		log.Error(err)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 }
@@ -47,10 +50,13 @@ func syncUpdate(db *gorm.DB) {
 		return
 	}
 
-	_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
+	if kit.IsAliveRemote() {
 
-	if err != nil {
-		log.Error(err)
+		_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
+
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 }
@@ -70,10 +76,12 @@ func syncDelete(db *gorm.DB) {
 		return
 	}
 
-	_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
+	if kit.IsAliveRemote() {
+		_, err = kit.PostExt("/cluster/database/exec", entities.Callback{Query: db.Statement.SQL.String(), Params: params(db.Statement.Vars)})
 
-	if err != nil {
-		log.Error(err)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 }

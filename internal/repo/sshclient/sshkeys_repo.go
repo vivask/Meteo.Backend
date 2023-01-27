@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-func (p sshclientService) AddSshKey(sshKey entities.SshKeys) error {
+func (p sshclientService) AddSshKey(sshKey entities.SshKeys) (uint32, error) {
 	sshKey.ID = utils.HashNow32()
 	err := p.db.Omit("UpdatedAt").Create(&sshKey).Error
 	if err != nil {
-		return fmt.Errorf("error insert ssh_keys: %w", err)
+		return 0, fmt.Errorf("error insert ssh_keys: %w", err)
 	}
-	return nil
+	return sshKey.ID, nil
 }
 
 func (p sshclientService) EditSshKey(sshKey entities.SshKeys) error {

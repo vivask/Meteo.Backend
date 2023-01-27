@@ -9,7 +9,7 @@ import (
 
 // Esp32API api controller of produces
 type Esp32API interface {
-	RegisterAPIV1(router *gin.RouterGroup)
+	RegisterAPIV1(router *gin.RouterGroup) *gin.RouterGroup
 	Middleware() gin.HandlerFunc
 	Handler(*gin.Context)
 	UploadFirmware(c *gin.Context)

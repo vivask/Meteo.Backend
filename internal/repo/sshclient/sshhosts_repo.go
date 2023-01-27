@@ -26,14 +26,14 @@ func (p sshclientService) GetAllSshHosts(pageable dto.Pageable) ([]entities.SshH
 	return hosts, err
 }
 
-func (p sshclientService) AddSshHost(host entities.SshHosts) error {
+func (p sshclientService) AddSshHost(host entities.SshHosts) (uint32, error) {
 	host.ID = utils.HashString32(host.Host)
 	err := p.db.Omit("UpdatedAt").Create(&host).Error
 	if err != nil {
 		log.Errorf("error insert sshhosts: %v", err)
-		return fmt.Errorf("error insert sshhosts: %w", err)
+		return 0, fmt.Errorf("error insert sshhosts: %w", err)
 	}
-	return err
+	return host.ID, err
 }
 
 func (p sshclientService) EditSshHost(host entities.SshHosts) error {

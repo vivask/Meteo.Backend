@@ -1,14 +1,16 @@
 package errors
 
 import (
-	"meteo/internal/dto"
 	"meteo/internal/log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-var ErrReplyUnknown = dto.ReplyError("Unknown error")
+const (
+	ErrReplyUnknown  = "Unknown error"
+	ErrInvalidInputs = "Invalid inputs. Please check your inputs"
+)
 
 const tagUnhandlerError = "[UnhandlerError]:"
 const tagAppError = "[AppError]:"
@@ -21,11 +23,11 @@ func GinError() gin.HandlerFunc {
 			err := errors[0].Err
 			if err, ok := err.(*Error); ok {
 				log.Error(tagAppError, err)
-				c.AbortWithStatusJSON(err.Code, err.ToReply())
+				c.AbortWithStatusJSON(err.Code, gin.H{"code": err.Code, "message": err.Error()})
 				return
 			}
 			log.Error(tagUnhandlerError, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, ErrReplyUnknown)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": ErrReplyUnknown})
 			return
 		}
 	}

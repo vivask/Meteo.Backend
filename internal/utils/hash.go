@@ -8,6 +8,8 @@ import (
 
 	"crypto/md5"
 	"hash/fnv"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func HashString64(str string) uint64 {
@@ -66,4 +68,15 @@ func GenerateRandomString(n int) string {
 		sb.WriteByte(letterBytes[idx])
 	}
 	return sb.String()
+}
+
+func HashPassword(password string) (string, error) {
+	// Convert password string to byte slice
+	var passwordBytes = []byte(password)
+
+	// Hash password with bcrypt's min cost
+	hashedPasswordBytes, err := bcrypt.
+		GenerateFromPassword(passwordBytes, bcrypt.MinCost)
+
+	return string(hashedPasswordBytes), err
 }

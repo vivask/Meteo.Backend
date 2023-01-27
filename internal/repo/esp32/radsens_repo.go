@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"meteo/internal/dto"
 	"meteo/internal/entities"
 	"meteo/internal/kit"
 	"meteo/internal/utils"
@@ -34,7 +35,7 @@ func (p esp32Service) AddRadsens(dyn, stat, pl, dts interface{}) error {
 	if err != nil {
 		return fmt.Errorf("convert error: %w", err)
 	}
-	pulse, err := toInt(pl)
+	pulse, err := toFloat(pl)
 	if err != nil {
 		return fmt.Errorf("convert error: %w", err)
 	}
@@ -153,4 +154,148 @@ func (p esp32Service) RadsensHVSet() error {
 		return fmt.Errorf("update settings error: %w", err)
 	}
 	return nil
+}
+
+func (p esp32Service) GetRadsensMinByHours(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	MIN(dynamic) dynamic, MIN(static) static, MIN(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensMaxByHours(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	MAX(dynamic) dynamic, MAX(static) static, MAX(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensAvgByHours(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('hour', date_time) as gdate,
+	AVG(dynamic) dynamic, AVG(static) static, AVG(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensMinByDays(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	MIN(dynamic) dynamic, MIN(static) static, MIN(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensMaxByDays(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	MAX(dynamic) dynamic, MAX(static) static, MAX(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensAvgByDays(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('day', date_time) as gdate,
+	AVG(dynamic) dynamic, AVG(static) static, AVG(pulse) pulse
+	FROM radsens
+	WHERE date_time > ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensMinByMonths(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	MIN(dynamic) dynamic, MIN(static) static, MIN(pulse) pulse
+	FROM radsens
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensMaxByMonths(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	MAX(dynamic) dynamic, MAX(static) static, MAX(pulse) pulse
+	FROM radsens
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
+}
+
+func (p esp32Service) GetRadsensAvgByMonths(period dto.Period) ([]entities.Radsens, error) {
+
+	var radsens []entities.Radsens
+	query := `SELECT DATE_TRUNC('month', date_time) as gdate,
+	AVG(dynamic) dynamic, AVG(static) static, AVG(pulse) pulse
+	FROM radsens
+	WHERE date_time >= ? AND date_time <= ?
+	GROUP BY gdate
+	ORDER BY gdate`
+	err := p.db.Raw(query, period.Begin, period.End).Scan(&radsens).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read radsens: %w", err)
+	}
+	return radsens, err
 }

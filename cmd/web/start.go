@@ -28,8 +28,8 @@ var (
 	configPath string
 	startCmd   = &cobra.Command{
 		Use:   "start",
-		Short: "start server",
-		Long:  `start server, default port is 5000`,
+		Short: "start web",
+		Long:  `start web, default port is 443`,
 		Run:   startWebServer,
 	}
 	enablePprof       bool
@@ -40,10 +40,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file (default is $PWD/config/default.yaml)")
-	startCmd.PersistentFlags().Int("port", 5000, "Port to run Application server on")
 	startCmd.PersistentFlags().BoolVarP(&enablePprof, "pprof", "p", false, "enable pprof mode (default: false)")
 	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", false, "enable auto migrate (default: false)")
-	config.Viper().BindPFlag("port", startCmd.PersistentFlags().Lookup("port"))
 }
 
 func initConfig() {
@@ -180,7 +178,7 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 	<-quit
 	log.Infof("Shutdown %s Server ...", config.Default.Web.Title)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %v", config.Default.Web.Title, err)
@@ -198,6 +196,6 @@ func setupDoc() {
 	docs.SwaggerInfo.Description = "This is meteo golang server."
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Default.Web.Listen, config.Default.Web.Port)
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.BasePath = config.Default.App.Api
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 }

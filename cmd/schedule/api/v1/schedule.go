@@ -56,7 +56,7 @@ func (p scheduleAPI) reloadJobs() error {
 	}
 	p.cron.Update()
 	p.LogActiveJobs()
-	log.Debug("Jobs reloaded success")
+	log.Info("Jobs reloaded success")
 	return nil
 }
 
@@ -82,16 +82,16 @@ func (p scheduleAPI) executeJobs() error {
 }
 
 func (p scheduleAPI) selectTask(job entities.Jobs) error {
-	if job.Executor.ID == "Main" && !kit.IsMain() {
-		log.Warningf("can't run job [%s] as Backup, need Main", job.Note)
+	if job.Executor.ID == "main" && kit.IsBackup() {
+		log.Debugf("can't run job [%s] as Backup, need Main", job.Note)
 		return nil
 	}
-	if job.Executor.ID == "Backup" && kit.IsMain() {
-		log.Warningf("can't run job [%s] as Main, need Backup", job.Note)
+	if job.Executor.ID == "backup" && kit.IsMain() {
+		log.Debugf("can't run job [%s] as Main, need Backup", job.Note)
 		return nil
 	}
-	if job.Executor.ID == "Leader" && !kit.IsLeader() {
-		log.Warningf("can't run job [%s], need Leader", job.Note)
+	if job.Executor.ID == "leader" && !kit.IsLeader() {
+		log.Debugf("can't run job [%s], need Leader", job.Note)
 		return nil
 	}
 
@@ -100,6 +100,7 @@ func (p scheduleAPI) selectTask(job entities.Jobs) error {
 		return fmt.Errorf("add job error: %w", err)
 	}
 	p.jobs[job.ID] = cronJob
+
 	return nil
 }
 

@@ -7,4 +7,6 @@ func (p clusterAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	cluster.GET("/leader/get", p.IsLeader)
 	cluster.GET("/health", p.GetHealth)
 	cluster.POST("/database/exec", p.DbExec)
+	cluster.GET("/logging", p.GetLogging)
+	cluster.PUT("/logging", p.ClearLogging)
 }

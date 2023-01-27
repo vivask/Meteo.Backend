@@ -31,14 +31,14 @@ func (p scheduleService) GetJobByID(id uint32) (*entities.Jobs, error) {
 	return &job, err
 }
 
-func (p scheduleService) AddJob(job entities.Jobs) error {
+func (p scheduleService) AddJob(job entities.Jobs) (uint32, bool, error) {
 	if job.Period.ID == "one" {
 		dt, err := utils.GetDateTime(job.Date, job.Time)
 		if err != nil {
-			return fmt.Errorf("GetDateTime error: %w", err)
+			return 0, false, fmt.Errorf("GetDateTime error: %w", err)
 		}
 		if dt.Unix()-time.Now().Unix() < 0 {
-			return fmt.Errorf("task can't be run at this time: %v", job.Time)
+			return 0, false, fmt.Errorf("task can't be run at this time: %v", job.Time)
 		}
 	}
 	tx := p.db.Begin()
@@ -51,7 +51,7 @@ func (p scheduleService) AddJob(job entities.Jobs) error {
 	err := tx.Create(&job).Error
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("error create job: %w", err)
+		return 0, false, fmt.Errorf("error create job: %w", err)
 	}
 	tx.Commit()
 	// try execute job
@@ -60,28 +60,28 @@ func (p scheduleService) AddJob(job entities.Jobs) error {
 		log.Warningf("Reload jobs error: %v", err)
 		err := p.db.Model(&entities.Jobs{}).Where("id = ?", job.ID).Update("active", false).Error
 		if err != nil {
-			return fmt.Errorf("update jobs error: %w", err)
+			return job.ID, false, fmt.Errorf("update jobs error: %w", err)
 		}
-		return fmt.Errorf("reload jobs error")
+		return job.ID, false, fmt.Errorf("reload jobs error")
 	}
-	return nil
+	return job.ID, true, nil
 }
 
-func (p scheduleService) EditJob(job entities.Jobs) error {
+func (p scheduleService) EditJob(job entities.Jobs) (bool, error) {
 	if job.Period.ID == "one" {
 		dt, err := utils.GetDateTime(job.Date, job.Time)
 		if err != nil {
-			return fmt.Errorf("GetDateTime error: %w", err)
+			return false, fmt.Errorf("GetDateTime error: %w", err)
 		}
 		if dt.Unix()-time.Now().Unix() < 0 {
-			return fmt.Errorf("task can't be run at this time: %v", job.Time)
+			return false, fmt.Errorf("task can't be run at this time: %v", job.Time)
 		}
 
 	}
 	tx := p.db.Begin()
 	err := tx.Where("job_id = ?", job.ID).Delete(&entities.JobParams{}).Error
 	if err != nil {
-		return fmt.Errorf("remove job_params error: %w", err)
+		return false, fmt.Errorf("remove job_params error: %w", err)
 	}
 	for _, param := range job.Params {
 		param.ID = utils.HashNow32()
@@ -90,7 +90,7 @@ func (p scheduleService) EditJob(job entities.Jobs) error {
 	err = tx.Save(&job).Error
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("error update jobs: %w", err)
+		return false, fmt.Errorf("error update jobs: %w", err)
 	}
 	tx.Commit()
 	// try execute job
@@ -99,11 +99,11 @@ func (p scheduleService) EditJob(job entities.Jobs) error {
 		log.Warningf("Reload jobs error: %v", err)
 		err := p.db.Model(&entities.Jobs{}).Where("id = ?", job.ID).Update("active", false).Error
 		if err != nil {
-			return fmt.Errorf("update jobs error: %w", err)
+			return false, fmt.Errorf("update jobs error: %w", err)
 		}
-		return fmt.Errorf("reload jobs error")
+		return false, fmt.Errorf("reload jobs error")
 	}
-	return nil
+	return true, nil
 }
 
 func (p scheduleService) ActivateJob(id uint32) error {

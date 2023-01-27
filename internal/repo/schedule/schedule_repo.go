@@ -16,8 +16,8 @@ type ScheduleService interface {
 	DelTask(id string) error
 	GetAllJobs(pageable dto.Pageable) ([]entities.Jobs, error)
 	GetJobByID(id uint32) (*entities.Jobs, error)
-	AddJob(job entities.Jobs) error
-	EditJob(job entities.Jobs) error
+	AddJob(job entities.Jobs) (uint32, bool, error)
+	EditJob(job entities.Jobs) (bool, error)
 	ActivateJob(id uint32) error
 	DeactivateJob(id uint32, off bool) error
 	RunJob(id uint32) error

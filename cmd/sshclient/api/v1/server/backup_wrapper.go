@@ -2,6 +2,7 @@ package server
 
 import (
 	"meteo/internal/config"
+	"meteo/internal/errors"
 	"meteo/internal/log"
 	"net/http"
 
@@ -12,11 +13,7 @@ func (p serverAPI) RestarKodi(c *gin.Context) {
 
 	err := p.KodiRestart()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Restart Kodi success")
@@ -27,11 +24,7 @@ func (p serverAPI) RestarStorageKodi(c *gin.Context) {
 
 	err := p.KodiStorageRestart()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Restart Storage Kodi success")
@@ -42,11 +35,7 @@ func (p serverAPI) StopStorageKodi(c *gin.Context) {
 
 	err := p.KodiStorageStop()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Stop Storage Kodi success")
@@ -57,11 +46,7 @@ func (p serverAPI) StartStorageKodi(c *gin.Context) {
 
 	err := p.KodiStorageStart()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Start Storage Kodi success")
@@ -76,11 +61,7 @@ func (p serverAPI) RestartBackupCont(c *gin.Context) {
 
 	err := p.ContainerReboot(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Restart Backup Server container success")
@@ -95,11 +76,7 @@ func (p serverAPI) StopBackupCont(c *gin.Context) {
 
 	err := p.ContainerShutdown(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Stop Backup Server container success")
@@ -114,11 +91,7 @@ func (p serverAPI) StartBackupCont(c *gin.Context) {
 
 	err := p.ContainerStart(adderess, port, username, c.Param("id"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Start Backup Server container success")
@@ -131,13 +104,9 @@ func (p serverAPI) BackupReboot(c *gin.Context) {
 	port := config.Default.SshClient.Backup.Port
 	username := config.Default.SshClient.Backup.User
 
-	err := p.ServerReboot(adderess, port, username)
+	err := p.ServerShutdown(adderess, port, username, "systemctl reboot")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Backup Server reboot success")
@@ -150,15 +119,21 @@ func (p serverAPI) BackupShutdown(c *gin.Context) {
 	port := config.Default.SshClient.Backup.Port
 	username := config.Default.SshClient.Backup.User
 
-	err := p.ServerShutdown(adderess, port, username)
+	err := p.ServerShutdown(adderess, port, username, "poweroff")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	log.Info("Backup Server shutdown success")
 	c.Status(http.StatusOK)
+}
+
+func (p serverAPI) GetStorageHealth(c *gin.Context) {
+
+	err := p.StorageHealth()
+	if err != nil {
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, "healthy")
 }

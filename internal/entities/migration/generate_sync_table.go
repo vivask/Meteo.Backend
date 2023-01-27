@@ -106,6 +106,12 @@ func CreateSyncTables(db *gorm.DB) error {
 					{SyncTypes: entities.SyncTypes{ID: "replace"}},
 				},
 			},
+			{
+				ID: "users",
+				Params: []entities.SyncParams{
+					{SyncTypes: entities.SyncTypes{ID: "replace"}},
+				},
+			},
 		}
 		err := db.Create(&tables).Error
 		if err != nil {

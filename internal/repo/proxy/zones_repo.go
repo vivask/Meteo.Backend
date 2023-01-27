@@ -31,24 +31,24 @@ func (p proxyService) GetAllHomeZoneHosts() (*[]entities.Homezone, error) {
 	return &hosts, nil
 }
 
-func (p proxyService) AddHomeZoneHost(host entities.Homezone) error {
+func (p proxyService) AddHomeZoneHost(host entities.Homezone) (uint32, error) {
 	tx := p.db.Begin()
 	host.ID = utils.HashString32(fmt.Sprintf("%s%s", host.Name, host.Address))
 	err := tx.Create(&host).Error
 	if err != nil {
-		return fmt.Errorf("error insert homezones: %w", err)
+		return 0, fmt.Errorf("error insert homezones: %w", err)
 	}
 	_, err = kit.PutInt("/proxy/zones/update", nil)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("proxy internal error: %w", err)
+		return 0, fmt.Errorf("proxy internal error: %w", err)
 	}
 	tx.Commit()
 	err = p.routerZonesUpdate()
 	if err != nil {
-		return fmt.Errorf("router zones update: %w", err)
+		return 0, fmt.Errorf("router zones update: %w", err)
 	}
-	return nil
+	return host.ID, nil
 }
 
 func (p proxyService) EditHomeZoneHost(host entities.Homezone) error {

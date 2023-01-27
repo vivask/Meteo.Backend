@@ -3,6 +3,7 @@ package proxy
 import (
 	"encoding/json"
 	"meteo/internal/entities"
+	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"meteo/internal/log"
 	"net/http"
@@ -20,11 +21,7 @@ func (p proxyAPI) GetProxyesState(c *gin.Context) {
 	} else {
 		err = json.Unmarshal(body, &state[0])
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -35,11 +32,7 @@ func (p proxyAPI) GetProxyesState(c *gin.Context) {
 	} else {
 		err = json.Unmarshal(body, &state[1])
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -51,21 +44,13 @@ func SetProxyStart(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/server/start", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/server/start", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -76,21 +61,13 @@ func SetProxyStop(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/server/stop", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/server/stop", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -101,21 +78,13 @@ func SetProxyAdBlockOn(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/adblock/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/adblock/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -126,21 +95,13 @@ func SetProxyAdBlockOff(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/adblock/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/adblock/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -151,21 +112,13 @@ func SetProxyCacheOn(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/cache/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/cache/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -176,21 +129,13 @@ func SetProxyCacheOff(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/cache/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/cache/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -201,21 +146,13 @@ func SetProxyUnlockOn(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/unlock/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/unlock/on", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}
@@ -226,21 +163,13 @@ func SetProxyUnlockOff(c *gin.Context, master bool) {
 	if (master && kit.IsMain()) || (!master && !kit.IsMain()) {
 		_, err := kit.PutInt("/proxy/unlock/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	} else {
 		_, err := kit.PutExt("/proxy/unlock/off", nil)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError,
-				gin.H{
-					"code":    http.StatusInternalServerError,
-					"error":   "WEBERR",
-					"message": err.Error()})
+			c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 			return
 		}
 	}

@@ -238,7 +238,7 @@ func updateList(lists []string) (*BlackList, []bool) {
 			log.Errorf("No access to block list: %s", v)
 		} else {
 			loaded[idx] = true
-			log.Infof("Uploaded %d blocked hosts from: %s", cnt, v)
+			log.Debugf("Uploaded %d blocked hosts from: %s", cnt, v)
 		}
 	}
 	return list, loaded
@@ -298,7 +298,7 @@ func LoadAdBlock() *BlackList {
 		log.Errorf("load block list from file error: %w", err)
 		return list
 	}
-	log.Infof("Loaded %d block hosts from file", cnt)
+	log.Debugf("Loaded %d block hosts from file", cnt)
 
 	return list
 }

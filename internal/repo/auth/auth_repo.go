@@ -15,7 +15,7 @@ type AuthService interface {
 	GetUserByID(userID string) (*entities.User, error)
 	GetUserByName(name string) (*entities.User, error)
 	UpdateUsername(user *entities.User) error
-	UpdatePassword(userID string, password string, tokenHash string) error
+	UpdatePassword(userID string, password string) error
 }
 
 type authService struct {
@@ -32,6 +32,7 @@ func (p authService) Create(user entities.User) error {
 	user.ID = id.String()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+	user.Aproved = false
 
 	err := p.db.Create(&user).Error
 	if err != nil {
@@ -64,14 +65,14 @@ func (p authService) UpdateUsername(user *entities.User) error {
 	return err
 }
 
-func (p authService) UpdatePassword(userID string, password string, tokenHash string) error {
+func (p authService) UpdatePassword(userID string, password string) error {
 	user := new(entities.User)
 	err := p.db.Where("id = ?", user.ID).First(&user).Error
 	if err != nil {
 		return err
 	}
 	user.Password = password
-	user.Token = tokenHash
+	user.UpdatedAt = time.Now()
 	err = p.db.Where("id = ?", userID).Save(user).Error
 	return err
 }

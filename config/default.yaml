@@ -6,9 +6,10 @@
 ########################
 # Applicaton settings #
 app:
-  mode: single #Must be sinle or dual
+  mode: dual #Must be sinle or dual
   server: main #Must be main or backup
   healthPort: 20000
+  api: /api/v1
 
 ########################
 # Dtabase settings #
@@ -27,14 +28,20 @@ database:
 # Cluster settings #
 cluster:
   title: Cluster
-  bind: 0.0.0.0
-  port: 10000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
+  api:
+    bind: 0.0.0.0
+    port: 10000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   dblink: 127.0.0.1
-  interface: eth0
+  interface: enp3s0
+  vrid: 10
   virtualip: 192.168.1.99
+  priority: 200
   logLevel: info
 
 ########################
@@ -43,8 +50,6 @@ client:
   ssl: true
   local: 192.168.1.10
   remote: 192.168.1.11
-  crt: /run/secrets/client.crt
-  key: /run/secrets/client.key
 
 ########################
 # Auth settings #
@@ -122,22 +127,41 @@ proxy:
   logLevel: info
 
 ########################
-# Server settings #
-server:
-  title: Server
+# Radius settings #
+radius:
+  title: Radius
   active: true
-  bind: 0.0.0.0
-  port: 15000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
-  dblink: 127.0.0.1
-  radius:
-    healthUser: healthy
-    healthPasswd: health123
-    healthKey: testing123
-    healthPort: 18120
-    debugMode: false
+  api:
+    bind: 0.0.0.0
+    port: 15000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
+  dblink: postgres
+  healthUser: health
+  healthPasswd: health
+  healthKey: testing12345
+  healthPort: 18120
+  debugMode: false
+  logLevel: info
+
+########################
+# Media settings #
+media:
+  title: Media
+  active: true
+  api:
+    bind: 0.0.0.0
+    port: 18000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   storage:
     device: /dev/sdb1
     mountPoint: /media/samba
@@ -147,15 +171,39 @@ server:
   logLevel: info
 
 ########################
+# Nut settings #
+nut:
+  title: Nut
+  active: true
+  api:
+    bind: 0.0.0.0
+    port: 16000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
+  driver: powercom
+  port: 3493
+  apiUser: upsuser
+  apiPass: upspassword
+  logLevel: info
+
+########################
 # Messanger settings #
 messanger:
   title: Messanger
   active: false
-  bind: 0.0.0.0
-  port: 14000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
+  api:
+    bind: 0.0.0.0
+    port: 14000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   telegram:
     active: false
     chatid: "your_chatid"
@@ -168,11 +216,15 @@ messanger:
 sshclient:
   title: SshClient
   active: true
-  bind: 0.0.0.0
-  port: 13000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
+  api:
+    bind: 0.0.0.0
+    port: 13000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   dblink: postgres
   git:
     host: 192.168.1.9
@@ -217,18 +269,22 @@ sshclient:
     host: 192.168.1.11
     port: 22
     user: backup
-  logLevel: debug
+  logLevel: info
 
 ########################
 # SCHEDULE settings #
 schedule:
   title: Schedule
   active: true
-  bind: 0.0.0.0
-  port: 12000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
+  api:
+    bind: 0.0.0.0
+    port: 12000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   dblink: postgres
   logLevel: info
 
@@ -237,11 +293,15 @@ schedule:
 esp32:
   title: Esp32
   active: true
-  bind: 0.0.0.0
-  port: 17000
-  ca: /run/secrets/ca.crt
-  crt: /run/secrets/server.crt
-  key: /run/secrets/server.key
+  api:
+    bind: 0.0.0.0
+    port: 17000
+    ca: /run/secrets/ca.crt
+    crt: /run/secrets/server.crt
+    key: /run/secrets/server.key
+  client:
+    crt: /run/secrets/client.crt
+    key: /run/secrets/client.key
   dblink: postgres
   mac: 34:94:54:24:8D:14 #40:91:51:9B:39:04
   check: false

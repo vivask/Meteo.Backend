@@ -25,19 +25,15 @@ func getClusterState() (*entities.Cluster, error) {
 	body, err := GetInt("/cluster/leader/get")
 
 	if err != nil {
-		//message := fmt.Sprintf("Cluster servise on [%s] is down, error: %v", config.Default.App.Server, err)
-		//PostInt("/messanger/telegram", message)
 		return nil, fmt.Errorf("local Cluster Service not responding: %w", err)
 	}
 
 	c := &entities.Cluster{}
 	err = json.Unmarshal(body, c)
 	if err != nil {
-		//message := fmt.Sprintf("Cluster servise on [%s] is down, error: %v", config.Default.App.Server, err)
-		//PostInt("/messanger/telegram", message)
 		return nil, fmt.Errorf("unmarshal error on cluster: %w", err)
 	}
-	//log.Infof("Cluster state Leader: %v, Alive: %v", c.Leader, c.AliveRemote)
+	log.Debugf("Cluster state Leader: %v, Alive: %v", c.Leader, c.AliveRemote)
 	return c, nil
 }
 

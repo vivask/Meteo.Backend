@@ -20,22 +20,22 @@ func (p proxyService) GetAllManualToVpn(pageable dto.Pageable) (*[]entities.ToVp
 	return hosts, nil
 }
 
-func (p proxyService) AddManualToVpn(host entities.ToVpnManual) error {
+func (p proxyService) AddManualToVpn(host entities.ToVpnManual) (uint32, error) {
 	host.ID = utils.HashNow32()
 	tx := p.db.Begin()
 	err := tx.Create(&host).Error
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("error insert tovpnManual: %w", err)
+		return 0, fmt.Errorf("error insert tovpnManual: %w", err)
 	}
 	_, err = kit.PutInt("/sshclient/mikrotik/tovpn/manual/add", host)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("sshclient internal error: %w", err)
+		return 0, fmt.Errorf("sshclient internal error: %w", err)
 	}
 	tx.Commit()
 
-	return ReloadUnlocker()
+	return host.ID, ReloadUnlocker()
 }
 
 func (p proxyService) EditManualToVpn(host entities.ToVpnManual) error {

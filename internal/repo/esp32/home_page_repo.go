@@ -39,7 +39,7 @@ func (p esp32Service) GetHomePageData() (*entities.HomePage, error) {
 		Bmx280CreatedAt:     bme280.CreatedAt,
 		Ds18b20Tempr:        ds18b20.Tempr,
 		MaxDs18b20Alarm:     set.MaxDs18b20Alarm,
-		MinDs18b20Alarm:     set.MinBmx280TemprAlarm,
+		MinDs18b20Alarm:     set.MinDs18b20Alarm,
 		Ds18b20CreatedAt:    ds18b20.CreatedAt,
 		Mics6814No2:         mics6814.No2,
 		Mics6814Nh3:         mics6814.Nh3,

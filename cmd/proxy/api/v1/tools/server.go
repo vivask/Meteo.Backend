@@ -22,6 +22,15 @@ import (
 
 type ServerState int
 
+type Link struct {
+	Disable bool
+	Try     int
+}
+
+type Connected map[string]*Link
+
+const MAX_TRY = 3
+
 const (
 	STATE_VPN ServerState = iota
 	STATE_DIRECT
@@ -62,6 +71,7 @@ type Server struct {
 	unlockerOn      bool
 	mutex           sync.Mutex
 	queu            map[string]struct{}
+	links           Connected
 }
 
 // NewServer constructs a new server but does not start it, use Run to start it afterwards.
@@ -121,6 +131,7 @@ func (s *Server) CacheClear() {
 }
 
 func (s *Server) createConnectors() {
+	s.links = make(Connected)
 	f := func(servers []string, tlsOn bool) {
 		s.pools = []*pool{}
 		if tlsOn {
@@ -173,9 +184,29 @@ func (s *Server) tlsconnector(upstreamServer string) func() (*dns.Conn, error) {
 			tlsConf.ServerName = servername
 			dialableAddress = serverComponents[1] + ":" + port
 		}
+		if _, ok := s.links[dialableAddress]; !ok {
+			s.links[dialableAddress] = &Link{Disable: false, Try: 0}
+		}
+		link := s.links[dialableAddress]
+		if link.Disable {
+			return nil, fmt.Errorf("server %s disabled", dialableAddress)
+		}
 		conn, err := s.dial(dialableAddress, tlsConf)
 		if err != nil {
-			log.Warningf("Failed to connect to DNS-over-TLS upstream: %v", err)
+			if !link.Disable {
+				log.Warningf("Failed to connect to DNS-over-TLS upstream: %v", err)
+				link.Try++
+			}
+			if link.Try > MAX_TRY {
+				link.Disable = true
+				link.Try = 0
+				log.Warningf("Server [%s] disabled an hour", dialableAddress)
+				go func() {
+					time.Sleep(1 * time.Hour)
+					link.Disable = false
+					log.Infof("Server [%s] enabled", dialableAddress)
+				}()
+			}
 			return nil, err
 		}
 		return &dns.Conn{Conn: conn}, nil
@@ -212,7 +243,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	s.servers = []*dns.Server{tcp, udp}
 
-	g, ctx := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(ctx) 
 
 	go func() {
 		<-ctx.Done()

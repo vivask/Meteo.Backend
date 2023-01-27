@@ -99,12 +99,12 @@ func startSshClient(cmd *cobra.Command, agrs []string) {
 	if enablePprof {
 		pprof.Register(router, "monitor/pprof")
 	}
-	apiV1Router := router.Group("/api/v1")
+	apiV1Router := router.Group(config.Default.App.Api)
 	RegisterAPIV1(apiV1Router, db)
 
 	// run the rest server
-	var address = config.Default.SshClient.Bind
-	var port = config.Default.SshClient.Port
+	var address = config.Default.SshClient.Api.Bind
+	var port = config.Default.SshClient.Api.Port
 	if port > 0 {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
@@ -114,7 +114,7 @@ func startSshClient(cmd *cobra.Command, agrs []string) {
 	go func() {
 		tlsMinVersion := tls.VersionTLS12
 
-		caCert, err := os.ReadFile(config.Default.SshClient.Ca)
+		caCert, err := os.ReadFile(config.Default.SshClient.Api.Ca)
 		if err != nil {
 			log.Fatalf("error read CA: %w", err)
 		}
@@ -134,7 +134,7 @@ func startSshClient(cmd *cobra.Command, agrs []string) {
 			Handler:   router,
 		}
 		log.Infof("starting %s server on: https://%s", config.Default.SshClient.Title, address)
-		if err := srv.ListenAndServeTLS(config.Default.SshClient.Crt, config.Default.SshClient.Key); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(config.Default.SshClient.Api.Crt, config.Default.SshClient.Api.Key); err != nil && err != http.ErrServerClosed {
 			log.Error(fmt.Sprintf("listen: %s", err))
 		}
 	}()

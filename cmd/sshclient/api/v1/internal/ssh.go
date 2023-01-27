@@ -146,7 +146,7 @@ func addHostKey(host string, remote net.Addr, pubKey ssh.PublicKey) error {
 	knownHost := knownhosts.Normalize(remote.String())
 	finger := knownhosts.Line([]string{knownHost}, pubKey)
 
-	err := repozitory.AddSshHost(entities.SshHosts{Host: knownHost, Finger: finger})
+	_, err := repozitory.AddSshHost(entities.SshHosts{Host: knownHost, Finger: finger})
 	if err != nil {
 		return fmt.Errorf("add knownhost fail: %w", err)
 	}

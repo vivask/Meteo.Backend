@@ -1,6 +1,7 @@
 package esp32
 
 import (
+	"meteo/internal/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,11 +10,7 @@ import (
 func (p esp32API) GetHomePageData(c *gin.Context) {
 	hp, err := p.repo.GetHomePageData()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": hp})
@@ -22,11 +19,7 @@ func (p esp32API) GetHomePageData(c *gin.Context) {
 func (p esp32API) Mics6814CoChk(c *gin.Context) {
 	err := p.repo.Mics6814CoChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -35,11 +28,7 @@ func (p esp32API) Mics6814CoChk(c *gin.Context) {
 func (p esp32API) Mics6814No2Chk(c *gin.Context) {
 	err := p.repo.Mics6814No2Chk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -48,11 +37,7 @@ func (p esp32API) Mics6814No2Chk(c *gin.Context) {
 func (p esp32API) Mics6814Nh3Chk(c *gin.Context) {
 	err := p.repo.Mics6814Nh3Chk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -61,11 +46,7 @@ func (p esp32API) Mics6814Nh3Chk(c *gin.Context) {
 func (p esp32API) Bme280TemperatureChk(c *gin.Context) {
 	err := p.repo.Bme280TemperatureChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -74,11 +55,7 @@ func (p esp32API) Bme280TemperatureChk(c *gin.Context) {
 func (p esp32API) RadsensStaticChk(c *gin.Context) {
 	err := p.repo.RadsensStaticChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -87,11 +64,7 @@ func (p esp32API) RadsensStaticChk(c *gin.Context) {
 func (p esp32API) RadsensDynamicChk(c *gin.Context) {
 	err := p.repo.RadsensDynamicChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -100,11 +73,7 @@ func (p esp32API) RadsensDynamicChk(c *gin.Context) {
 func (p esp32API) RadsensHVSet(c *gin.Context) {
 	err := p.repo.RadsensHVSet()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -113,11 +82,7 @@ func (p esp32API) RadsensHVSet(c *gin.Context) {
 func (p esp32API) Ds18b20TemperatureChk(c *gin.Context) {
 	err := p.repo.Ds18b20TemperatureChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -126,11 +91,7 @@ func (p esp32API) Ds18b20TemperatureChk(c *gin.Context) {
 func (p esp32API) Ze08ch2oChk(c *gin.Context) {
 	err := p.repo.Ze08ch2oChk()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "WEBERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)

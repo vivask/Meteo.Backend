@@ -4,6 +4,7 @@ import "github.com/gin-gonic/gin"
 
 func (p serverAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	server := router.Group("/server")
+	server.GET("/backup/storage/helath", p.GetStorageHealth)
 	server.PUT("/backup/kodi/restart", p.RestarKodi)
 	server.PUT("/backup/kodi/storage/restart", p.RestarStorageKodi)
 	server.PUT("/backup/kodi/storage/stop", p.StopStorageKodi)

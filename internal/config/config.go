@@ -16,54 +16,14 @@ func init() {
 
 // Config struct
 type Config struct {
+	// Application config
 	App struct {
 		Mode       string
 		Server     string
 		HealthPort uint
+		Api        string
 	}
-	Cluster struct {
-		Title     string
-		Bind      string
-		Port      uint
-		Ca        string
-		Crt       string
-		Key       string
-		DbLink    string
-		Interface string
-		VirtualIP string
-		LogLevel  string
-	}
-	Client struct {
-		Ssl    bool
-		Local  string
-		Remote string
-		Crt    string
-		Key    string
-	}
-	Auth struct {
-		AccessTokenPrivateKeyPath  string
-		AccessTokenPublicKeyPath   string
-		RefreshTokenPrivateKeyPath string
-		RefreshTokenPublicKeyPath  string
-		PassResetCodeExpiration    int
-		JwtExpiration              uint
-		JwtRefreshExpiration       uint
-		JwtKey                     string
-	}
-	Web struct {
-		Title    string
-		Active   bool
-		Ssl      bool
-		Listen   string
-		Port     uint
-		Ui       string
-		Ca       string
-		Crt      string
-		Key      string
-		DbLink   string
-		TlsMin   string
-		LogLevel string
-	}
+	// Database config
 	Database struct {
 		Name     string
 		User     string
@@ -75,6 +35,60 @@ type Config struct {
 		Sync    bool
 		Exclude []string
 	}
+	// Cluster config
+	Cluster struct {
+		Title string
+		Api   struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
+		DbLink    string
+		Interface string
+		Vrid      uint
+		VirtualIP string
+		Priority  uint
+		LogLevel  string
+	}
+	// Client config
+	Client struct {
+		Ssl    bool
+		Local  string
+		Remote string
+	}
+	// JWT config
+	Auth struct {
+		AccessTokenPrivateKeyPath  string
+		AccessTokenPublicKeyPath   string
+		RefreshTokenPrivateKeyPath string
+		RefreshTokenPublicKeyPath  string
+		PassResetCodeExpiration    int
+		JwtExpiration              uint
+		JwtRefreshExpiration       uint
+		JwtKey                     string
+	}
+	// WEB config
+	Web struct {
+		Title    string
+		Active   bool
+		Ssl      bool
+		Ui       string
+		Listen   string
+		Port     uint
+		Ca       string
+		Crt      string
+		Key      string
+		DbLink   string
+		TlsMin   string
+		LogLevel string
+	}
+	// Proxy config
 	Proxy struct {
 		Title   string
 		Active  bool
@@ -82,12 +96,16 @@ type Config struct {
 		UdpPort uint
 		TcpPort uint
 		DbLink  string
-		Rest    struct {
+		Api     struct {
 			Bind string
 			Port uint
 			Ca   string
 			Crt  string
 			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
 		}
 		EvictMetrics   bool
 		NsVpn          []string
@@ -104,21 +122,43 @@ type Config struct {
 		AdSources      []string
 		LogLevel       string
 	}
-	Server struct {
+	// Radius config
+	Radius struct {
 		Title  string
 		Active bool
-		Bind   string
-		Port   uint
-		Ca     string
-		Crt    string
-		Key    string
-		DbLink string
-		Radius struct {
-			HealthUser   string
-			HealthPasswd string
-			HealthKey    string
-			HealthPort   uint
-			DebugMode    bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
+		DbLink       string
+		HealthUser   string
+		HealthPasswd string
+		HealthKey    string
+		HealthPort   uint
+		DebugMode    bool
+		LogLevel     string
+	}
+	// Media config
+	Media struct {
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
 		}
 		Storage struct {
 			Device     string
@@ -130,14 +170,42 @@ type Config struct {
 		}
 		LogLevel string
 	}
-	Messanger struct {
-		Title    string
-		Active   bool
-		Bind     string
+	// Nut config
+	Nut struct {
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
+		Driver   string
 		Port     uint
-		Ca       string
-		Crt      string
-		Key      string
+		ApiUser  string
+		ApiPass  string
+		LogLevel string
+	}
+	// Messanger config
+	Messanger struct {
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
 		Telegram struct {
 			Active bool
 			ChatId int64
@@ -146,14 +214,21 @@ type Config struct {
 		}
 		LogLevel string
 	}
+	// Ssh client config
 	SshClient struct {
 		Title  string
 		Active bool
-		Bind   string
-		Port   uint
-		Ca     string
-		Crt    string
-		Key    string
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
 		DbLink string
 		Git    struct {
 			Host       string
@@ -177,10 +252,11 @@ type Config struct {
 			Repository string
 		}
 		Vpn struct {
-			Host string
-			Port uint
-			User string
-			List string
+			Host      string
+			Port      uint
+			User      string
+			ListVpn   string
+			ListLocal string
 		}
 		Main struct {
 			Host string
@@ -194,25 +270,39 @@ type Config struct {
 		}
 		LogLevel string
 	}
+	// Schedule config
 	Schedule struct {
-		Title    string
-		Active   bool
-		Bind     string
-		Port     uint
-		Ca       string
-		Crt      string
-		Key      string
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
 		DbLink   string
 		LogLevel string
 	}
+	// Esp32 config
 	Esp32 struct {
-		Title    string
-		Active   bool
-		Bind     string
-		Port     uint
-		Ca       string
-		Crt      string
-		Key      string
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
 		DbLink   string
 		Mac      string
 		Check    bool

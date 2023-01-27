@@ -8,6 +8,7 @@ type Mics6814 struct {
 	Nh3       float64   `gorm:"column:nh3;not null" json:"nh3"`
 	Co        float64   `gorm:"column:co;not null" json:"co"`
 	CreatedAt time.Time `gorm:"column:date_time;not null;default:CURRENT_TIMESTAMP" json:"date_time"`
+	Gdate     time.Time `gorm:"-" json:"gdate"`
 }
 
 func (Mics6814) TableName() string {

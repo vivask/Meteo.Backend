@@ -1,12 +1,22 @@
 package log
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/op/go-logging"
+)
+
+const LOGGING_FILE_DIR = "/var/log/backend"
+
+var (
+	logFile     *os.File
+	moduleName  string
+	logFileName string
+	logLevel    string
 )
 
 // Example format string. Everything except the message has a custom color
@@ -17,7 +27,7 @@ var formatScreen = logging.MustStringFormatter(
 )
 
 var formatFile = logging.MustStringFormatter(
-	`[%{time:15:04:05.000}] %{longfile} %{longfunc} %{level:.4s} %{id:03x} %{message}`,
+	`[%{time:2006-01-02T15:04:05.000}] %{longfile} %{longfunc} %{level:.4s} %{id:03x} %{message}`,
 )
 
 // GetLogger new logger
@@ -41,7 +51,7 @@ func SetLogger(name, level string) error {
 		name = "unknown"
 	}
 
-	path := "/var/log/backend"
+	path := LOGGING_FILE_DIR
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err := os.Mkdir(path, 0744)
 		if err != nil {
@@ -49,27 +59,67 @@ func SetLogger(name, level string) error {
 		}
 	}
 
-	logFile := fmt.Sprintf("%s/%s.log", path, strings.ToLower(name))
-	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	moduleName = strings.ToLower(name)
+	logLevel = strings.ToUpper(level)
+	logFileName = fmt.Sprintf("%s/%s.log", path, strings.ToLower(moduleName))
+
+	err := CreateLogger()
 	if err != nil {
-		return fmt.Errorf("can't open log file %s, error: %w", logFile, err)
+		return err
 	}
 
-	writer := io.MultiWriter(os.Stdout, file)
+	rotate := New(logFile, logFileName)
+
+	return rotate.Start(1024*1024, 4)
+}
+
+// Create logger
+func CreateLogger() error {
+	logFile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return fmt.Errorf("can't open log file %s, error: %w", logFileName, err)
+	}
+
+	writer := io.MultiWriter(os.Stdout, logFile)
 	fileBE := logging.NewLogBackend(writer, "", 0)
 	beFileFormat := logging.NewBackendFormatter(fileBE, formatFile)
 	logging.SetBackend(beFileFormat)
-	lvl, err := logging.LogLevel(strings.ToUpper(level))
+	lvl, err := logging.LogLevel(logLevel)
 	if err != nil {
-		Errorf("Can't set log level %s, error: %v", level, err)
+		Errorf("Can't set log level %s, error: %v", logLevel, err)
 	} else {
 		logging.SetLevel(lvl, "")
 	}
-	Default = logging.MustGetLogger(name)
+	Default = logging.MustGetLogger(moduleName)
 
 	Debugf("Log Level: %v", lvl)
-
 	return nil
+}
+
+// Get logging context
+func GetLogging() ([]string, error) {
+	const Limit = 500
+	file, err := os.Open(logFileName)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	if len(lines) > Limit {
+		lines = lines[len(lines)-Limit:]
+	}
+
+	return lines, scanner.Err()
+}
+
+func ClearLogging() error {
+	return os.Truncate(logFileName, 0)
 }
 
 // Error logs a message using ERROR as log level.

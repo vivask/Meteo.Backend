@@ -3,6 +3,7 @@ package mikrotik
 import (
 	"fmt"
 	"meteo/internal/config"
+	"meteo/internal/errors"
 	"meteo/internal/log"
 	"net/http"
 	"regexp"
@@ -24,11 +25,7 @@ func (p mikrotikAPI) CheckBYFLY(c *gin.Context) {
 
 	err := p.checkPPPState()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR-1",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)

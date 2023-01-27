@@ -70,12 +70,12 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 	if enablePprof {
 		pprof.Register(router, "monitor/pprof")
 	}
-	apiV1Router := router.Group("/api/v1")
+	apiV1Router := router.Group(config.Default.App.Api)
 	RegisterAPIV1(apiV1Router)
 
 	// run the rest server
-	var address = config.Default.Messanger.Bind
-	var port = config.Default.Messanger.Port
+	var address = config.Default.Messanger.Api.Bind
+	var port = config.Default.Messanger.Api.Port
 	if port > 0 {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
@@ -85,7 +85,7 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 	go func() {
 		tlsMinVersion := tls.VersionTLS12
 
-		caCert, err := os.ReadFile(config.Default.Messanger.Ca)
+		caCert, err := os.ReadFile(config.Default.Messanger.Api.Ca)
 		if err != nil {
 			log.Fatalf("error read CA: %w", err)
 		}
@@ -105,7 +105,7 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 			Handler:   router,
 		}
 		log.Infof("starting %s server on: https://%s", config.Default.Messanger.Title, address)
-		if err := srv.ListenAndServeTLS(config.Default.Messanger.Crt, config.Default.Messanger.Key); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(config.Default.Messanger.Api.Crt, config.Default.Messanger.Api.Key); err != nil && err != http.ErrServerClosed {
 			log.Error(fmt.Sprintf("listen: %s", err))
 		}
 	}()
@@ -133,7 +133,7 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 	<-quit
 	log.Infof("Shutdown %s Server ...", config.Default.Messanger.Title)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Messanger.Title, err)

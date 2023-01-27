@@ -3,6 +3,7 @@ package v1
 import (
 	"fmt"
 	"meteo/internal/config"
+	"meteo/internal/errors"
 	"meteo/internal/log"
 	"net/http"
 
@@ -21,11 +22,7 @@ func (p esp32API) UploadFirmware(c *gin.Context) {
 
 	file, err := c.FormFile("firmware")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "ESP32ERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -33,11 +30,7 @@ func (p esp32API) UploadFirmware(c *gin.Context) {
 	dst := fmt.Sprintf("%s/%s", UPLOAD, file.Filename)
 	err = c.SaveUploadedFile(file, dst)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "ESP32ERR",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.Status(http.StatusOK)
@@ -47,11 +40,7 @@ func (p esp32API) Handler(c *gin.Context) {
 
 	msg := map[string]interface{}{}
 	if err := c.ShouldBind(&msg); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest,
-			gin.H{
-				"code":    http.StatusBadRequest,
-				"error":   "ESP32ERR",
-				"message": "Invalid inputs. Please check your inputs"})
+		c.Error(errors.NewError(http.StatusBadRequest, errors.ErrInvalidInputs))
 		return
 	}
 
@@ -110,7 +99,7 @@ func (p esp32API) Handler(c *gin.Context) {
 				}
 				data.ValveState = toUint8(res.ValveState)
 				data.CCS811Baseline = uint8(res.CCS811Baseline)
-				data.MinTempn = res.MinTempn
+				data.MinTempn = res.MinTemp
 				data.MaxTemp = res.MaxTemp
 				data.ValveDisable = toUint8(res.ValveDisable)
 				data.Firmware = res.Firmware

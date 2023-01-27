@@ -3,8 +3,6 @@ package server
 import (
 	"fmt"
 	SSH "meteo/cmd/sshclient/api/v1/internal"
-	"meteo/internal/config"
-	"strings"
 )
 
 func (p serverAPI) ContainerReboot(adderess string, port uint, username, name string) error {
@@ -60,7 +58,7 @@ func (p serverAPI) ContainerStart(adderess string, port uint, username, name str
 	return nil
 }
 
-func (p serverAPI) ServerReboot(adderess string, port uint, username string) error {
+func (p serverAPI) ServerShutdown(adderess string, port uint, username, cmd string) error {
 
 	bind := fmt.Sprintf("%s:%d", adderess, port)
 
@@ -69,34 +67,6 @@ func (p serverAPI) ServerReboot(adderess string, port uint, username string) err
 		return fmt.Errorf("can't create ssh link: %w", err)
 	}
 	defer link.Close()
-
-	cmd := "sudo systemctl reboot"
-	if config.Default.App.Server == "backup" {
-		cmd = strings.Replace(cmd, "sudo ", "", -1)
-	}
-
-	_, err = link.Exec(cmd, 1)
-	if err != nil {
-		return fmt.Errorf("ssh exec error: %w", err)
-	}
-
-	return nil
-}
-
-func (p serverAPI) ServerShutdown(adderess string, port uint, username string) error {
-
-	bind := fmt.Sprintf("%s:%d", adderess, port)
-
-	link, err := SSH.NewSSHLink(bind, username)
-	if err != nil {
-		return fmt.Errorf("can't create ssh link: %w", err)
-	}
-	defer link.Close()
-
-	cmd := "sudo systemctl shutdown"
-	if config.Default.App.Server == "backup" {
-		cmd = strings.Replace(cmd, "sudo ", "", -1)
-	}
 
 	_, err = link.Exec(cmd, 1)
 	if err != nil {

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"meteo/internal/entities"
+	"meteo/internal/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,21 +11,13 @@ import (
 func (p sshclientAPI) GetHostFinger(c *gin.Context) {
 	var touch entities.Touch
 	if err := c.ShouldBind(&touch); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest,
-			gin.H{
-				"code":    http.StatusBadRequest,
-				"error":   "SSHERR-1",
-				"message": "Invalid inputs. Please check your inputs"})
+		c.Error(errors.NewError(http.StatusBadRequest, errors.ErrInvalidInputs))
 		return
 	}
 
 	finger, err := p.ssh.GetFinger(touch.User, touch.Host)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError,
-			gin.H{
-				"code":    http.StatusInternalServerError,
-				"error":   "SSHERR-1",
-				"message": err.Error()})
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, finger)
