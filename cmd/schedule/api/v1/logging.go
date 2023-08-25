@@ -25,3 +25,7 @@ func (p scheduleAPI) ClearLogging(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (p scheduleAPI) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

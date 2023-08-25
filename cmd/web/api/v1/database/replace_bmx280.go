@@ -49,7 +49,7 @@ func intToExtBmx280(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Bmx280 replased [%d] records", len(bmx280))
+	log.Infof("Bmx280 replased [%d] records", len(bmx280))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntBmx280(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Bmx280 replased [%d] records", len(bmx280))
+	log.Infof("Bmx280 replased [%d] records", len(bmx280))
 
 	return nil
 }

@@ -9,4 +9,5 @@ func (p messangerAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	messanger.GET("/health", p.GetHealth)
 	messanger.GET("/logging", p.GetLogging)
 	messanger.PUT("/logging", p.ClearLogging)
+	messanger.GET("/logging/empty", p.IsEmptyLog)
 }

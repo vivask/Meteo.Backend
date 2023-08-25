@@ -25,3 +25,7 @@ func (p esp32API) ClearLogging(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (p esp32API) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

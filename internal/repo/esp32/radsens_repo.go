@@ -6,6 +6,7 @@ import (
 	"meteo/internal/entities"
 	"meteo/internal/kit"
 	"meteo/internal/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -22,30 +23,71 @@ func (p esp32Service) GetLastRadsens() (*entities.Radsens, error) {
 	return &radsens, err
 }
 
-func (p esp32Service) AddRadsens(dyn, stat, pl, dts interface{}) error {
+// func (p esp32Service) AddRadsens(dyn, stat, pl, dts interface{}) error {
+// 	if isLockedRadsens() {
+// 		return nil
+// 	}
+
+// 	static, err := toFloat(stat)
+// 	if err != nil {
+// 		return fmt.Errorf("convert error: %w", err)
+// 	}
+// 	dynamic, err := toFloat(dyn)
+// 	if err != nil {
+// 		return fmt.Errorf("convert error: %w", err)
+// 	}
+// 	pulse, err := toFloat(pl)
+// 	if err != nil {
+// 		return fmt.Errorf("convert error: %w", err)
+// 	}
+// 	dt, err := toTime(dts)
+// 	if err != nil {
+// 		return fmt.Errorf("convert error: %w", err)
+// 	}
+
+// 	radsens := entities.Radsens{ID: utils.HashTime(dt), Dynamic: dynamic, Static: static, Pulse: pulse}
+// 	err = p.db.Create(&radsens).Error
+// 	if err != nil {
+// 		return fmt.Errorf("insert radsens: %v, error: %w", radsens, err)
+// 	}
+// 	settings, err := p.GetSettings()
+// 	if err != nil {
+// 		return fmt.Errorf("error read settings: %w", err)
+// 	}
+// 	message := fmt.Sprintf("RadSens: Превышена динамическая интенсивность излучения: %f мкР/ч", dynamic)
+// 	if dynamic > settings.MaxRadDyn && !settings.MaxRadDynAlarm {
+// 		settings.MaxRadDynAlarm = true
+// 		err = p.db.Save(&settings).Error
+// 		if err != nil {
+// 			return fmt.Errorf("update settings error: %w", err)
+// 		}
+// 		_, err := kit.PostInt("/messanger/telegram", message)
+// 		if err != nil {
+// 			return fmt.Errorf("can't send telegram message: %w", err)
+// 		}
+// 	}
+// 	message = fmt.Sprintf("RadSens: Превышена статическая интенсивность излучения: %f мкР/ч", static)
+// 	if static > settings.MaxRadStat && !settings.MaxRadStatAlarm {
+// 		settings.MaxRadStatAlarm = true
+// 		err = p.db.Save(&settings).Error
+// 		if err != nil {
+// 			return fmt.Errorf("update settings error: %w", err)
+// 		}
+// 		_, err := kit.PostInt("/messanger/telegram", message)
+// 		if err != nil {
+// 			return fmt.Errorf("can't send telegram message: %w", err)
+// 		}
+// 	}
+// 	return err
+// }
+
+func (p esp32Service) AddRadsens(dynamic, static float64, pulse uint32) error {
 	if isLockedRadsens() {
 		return nil
 	}
 
-	static, err := toFloat(stat)
-	if err != nil {
-		return fmt.Errorf("convert error: %w", err)
-	}
-	dynamic, err := toFloat(dyn)
-	if err != nil {
-		return fmt.Errorf("convert error: %w", err)
-	}
-	pulse, err := toFloat(pl)
-	if err != nil {
-		return fmt.Errorf("convert error: %w", err)
-	}
-	dt, err := toTime(dts)
-	if err != nil {
-		return fmt.Errorf("convert error: %w", err)
-	}
-
-	radsens := entities.Radsens{ID: utils.HashTime(dt), Dynamic: dynamic, Static: static, Pulse: pulse}
-	err = p.db.Create(&radsens).Error
+	radsens := entities.Radsens{ID: utils.HashTime(time.Now()), Dynamic: dynamic, Static: static, Pulse: float64(pulse)}
+	err := p.db.Create(&radsens).Error
 	if err != nil {
 		return fmt.Errorf("insert radsens: %v, error: %w", radsens, err)
 	}
@@ -148,7 +190,22 @@ func (p esp32Service) RadsensHVSet() error {
 	if err != nil {
 		return fmt.Errorf("error read settings: %w", err)
 	}
+	settings.RadsensHVMode = true
 	settings.RadsensHVState = !settings.RadsensHVState
+	err = p.db.Save(&settings).Error
+	if err != nil {
+		return fmt.Errorf("update settings error: %w", err)
+	}
+	return nil
+}
+
+func (p esp32Service) RadsensSetSens(val uint) error {
+	settings, err := p.GetSettings()
+	if err != nil {
+		return fmt.Errorf("error read settings: %w", err)
+	}
+	settings.RadsensHVMode = true
+	settings.RadsensSensitivity = int(val)
 	err = p.db.Save(&settings).Error
 	if err != nil {
 		return fmt.Errorf("update settings error: %w", err)

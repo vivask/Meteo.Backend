@@ -49,7 +49,7 @@ func intToExtSshKeys(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("SshKeys replased [%d] records", len(ssh_keys))
+	log.Infof("SshKeys replased [%d] records", len(ssh_keys))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntSshKeys(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("SshKeys replased [%d] records", len(ssh_keys))
+	log.Infof("SshKeys replased [%d] records", len(ssh_keys))
 
 	return nil
 }

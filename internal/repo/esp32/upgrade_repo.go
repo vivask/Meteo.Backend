@@ -11,7 +11,7 @@ func (p esp32Service) SuccessUpgrade() error {
 	if err != nil {
 		return fmt.Errorf("read settings error: %w", err)
 	}
-	set.Firmware = "_EMPTY_"
+	set.Firmware = ""
 	set.UpgradeStatus = 1
 	err = p.db.Save(&set).Error
 	if err != nil {
@@ -26,7 +26,7 @@ func (p esp32Service) TerminateUpgrade() error {
 	if err != nil {
 		return fmt.Errorf("read settings error: %w", err)
 	}
-	set.Firmware = "_EMPTY_"
+	set.Firmware = ""
 	set.UpgradeStatus = -1
 	err = p.db.Save(&set).Error
 	if err != nil {

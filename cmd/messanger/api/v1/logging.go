@@ -25,3 +25,7 @@ func (p messangerAPI) ClearLogging(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (p messangerAPI) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

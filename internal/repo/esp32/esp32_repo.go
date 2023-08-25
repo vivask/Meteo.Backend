@@ -3,6 +3,7 @@ package repo
 import (
 	"meteo/internal/dto"
 	"meteo/internal/entities"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -11,26 +12,28 @@ import (
 type Esp32Service interface {
 	GetSettings() (*entities.Settings, error)
 	SetSettings(s *entities.Settings) error
-	AddLoging(msg, t, dts interface{}) error
-	AddDs18b20(tempr, dts interface{}) error
-	AddBme280(press, tempr, hum, dts interface{}) error
-	AddRadsens(dyn, stat, pl, dts interface{}) error
-	AddZe08ch2o(ch2o, dts interface{}) error
-	AddMics6814(co, no2, nh3, dts interface{}) error
+	AddLoging(message, msgType string, time time.Time) error
+	AddDs18b20(temperature float64) error
+	AddBme280(pressure, temperature, humidity float64) error
+	AddRadsens(dynamic, static float64, pulse uint32) error
+	AddZe08ch2o(ch2o uint16) error
+	AddMics6814(co, no2, nh3 float64) error
 	SetEsp32Settings(cpu0L, cpu1L, dti interface{}) (*entities.Settings, error)
 	SetHVRadsens(state interface{}) error
 	SetSensRadsens(sens interface{}) error
 	JournalClear() error
-	SetJournaCleared() error
+	// SetJournaCleared() error
 	GetAllLoging(pageable dto.Pageable) ([]entities.Logging, error)
 	SetAccesPointMode() error
 	SetSTAMode() error
 	Esp32Reboot() error
 	Esp32Rebooted() error
+
 	UpgradeEsp32(fName string) error
 	GetUpgradeStatus() (*entities.Settings, error)
 	SuccessUpgrade() error
 	TerminateUpgrade() error
+
 	GetLastBmx280() (*entities.Bmx280, error)
 	GetLastDs18b20() (*entities.Ds18b20, error)
 	GetLastMics6814() (*entities.Mics6814, error)
@@ -44,6 +47,7 @@ type Esp32Service interface {
 	RadsensStaticChk() error
 	RadsensDynamicChk() error
 	RadsensHVSet() error
+	RadsensSetSens(val uint) error
 	Ds18b20TemperatureChk() error
 	Ze08ch2oChk() error
 
@@ -96,6 +100,35 @@ type Esp32Service interface {
 	GetRadsensMinByMonths(period dto.Period) ([]entities.Radsens, error)
 	GetRadsensMaxByMonths(period dto.Period) ([]entities.Radsens, error)
 	GetRadsensAvgByMonths(period dto.Period) ([]entities.Radsens, error)
+
+	GetLastAht25() (*entities.Aht25, error)
+	AddAht25(temperature, humidity float64) error
+	GetAht25MinByHours(period dto.Period) ([]entities.Aht25, error)
+	GetAht25MaxByHours(period dto.Period) ([]entities.Aht25, error)
+	GetAht25AvgByHours(period dto.Period) ([]entities.Aht25, error)
+	GetAht25MinByDays(period dto.Period) ([]entities.Aht25, error)
+	GetAht25MaxByDays(period dto.Period) ([]entities.Aht25, error)
+	GetAht25AvgByDays(period dto.Period) ([]entities.Aht25, error)
+	GetAht25MinByMonths(period dto.Period) ([]entities.Aht25, error)
+	GetAht25MaxByMonths(period dto.Period) ([]entities.Aht25, error)
+	GetAht25AvgByMonths(period dto.Period) ([]entities.Aht25, error)
+
+	ResetAccessPoint() error
+	ResetStm32() error
+	ResetRadsens() error
+	ResetRadsensHV(val uint8) error
+	ResetRadsensSens(val uint8) error
+	ResetJournal() error
+	ResetAvr(val bool) error
+	ResetOrders() error
+
+	GetSensorsState() (*entities.Sensors, error)
+	LockBmx280(lock bool) error
+	LockDs18b20(lock bool) error
+	LockRadsens(lock bool) error
+	LockMics6814(lock bool) error
+	LockZe08(lock bool) error
+	LockAht25(lock bool) error
 }
 
 type esp32Service struct {

@@ -45,7 +45,7 @@ func (p databaseService) GetNotSyncRadsens() ([]entities.Radsens, error) {
 
 func batchCreateRadsens(data []entities.Radsens, tx *gorm.DB) error {
 
-	chunkSize := int(65534 / unsafe.Sizeof(&entities.Radsens{}))
+	chunkSize := int(65534 / unsafe.Sizeof(entities.Radsens{}))
 
 	for {
 		if len(data) == 0 {

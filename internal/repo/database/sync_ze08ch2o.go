@@ -45,7 +45,7 @@ func (p databaseService) GetNotSyncZe08ch2o() ([]entities.Ze08ch2o, error) {
 
 func batchCreateZe08ch2o(data []entities.Ze08ch2o, tx *gorm.DB) error {
 
-	chunkSize := int(65534 / unsafe.Sizeof(&entities.Ze08ch2o{}))
+	chunkSize := int(65534 / unsafe.Sizeof(entities.Ze08ch2o{}))
 
 	for {
 		if len(data) == 0 {

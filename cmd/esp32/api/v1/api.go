@@ -11,8 +11,6 @@ import (
 type Esp32API interface {
 	RegisterAPIV1(router *gin.RouterGroup) *gin.RouterGroup
 	Middleware() gin.HandlerFunc
-	Handler(*gin.Context)
-	UploadFirmware(c *gin.Context)
 }
 
 type esp32API struct {

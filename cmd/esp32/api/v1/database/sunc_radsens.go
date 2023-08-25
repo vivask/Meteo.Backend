@@ -74,14 +74,14 @@ func (p databaseAPI) SyncRadsens(c *gin.Context) {
 
 func (p databaseAPI) ReplaceRadsens(c *gin.Context) {
 
-	var ds18b20 []entities.Radsens
+	var radsens []entities.Radsens
 
-	if err := c.ShouldBind(&ds18b20); err != nil {
+	if err := c.ShouldBind(&radsens); err != nil {
 		c.Error(errors.NewError(http.StatusBadRequest, errors.ErrInvalidInputs))
 		return
 	}
 
-	err := p.repo.ReplaceRadsens(ds18b20)
+	err := p.repo.ReplaceRadsens(radsens)
 	if err != nil {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return

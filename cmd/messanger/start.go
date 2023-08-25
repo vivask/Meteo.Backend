@@ -110,19 +110,6 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	var healt *http.Server
-	go func() {
-		address := fmt.Sprintf("127.0.0.1:%d", config.Default.App.HealthPort)
-		healt = &http.Server{
-			Addr:    address,
-			Handler: router,
-		}
-		log.Infof("starting %s health on: http://%s", config.Default.Messanger.Title, address)
-		if err := healt.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
-	}()
-
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
@@ -137,9 +124,6 @@ func startMessanger(cmd *cobra.Command, agrs []string) {
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Messanger.Title, err)
-	}
-	if err := healt.Shutdown(ctx); err != nil {
-		log.Errorf("%s Health Shutdown error: %s", config.Default.Messanger.Title, err)
 	}
 	// catching ctx.Done(). timeout of 1 seconds.
 	<-ctx.Done()

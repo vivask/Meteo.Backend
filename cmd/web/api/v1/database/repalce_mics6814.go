@@ -49,7 +49,7 @@ func intToExtMics6814(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Mics6814 replased [%d] records", len(mics6814))
+	log.Infof("Mics6814 replased [%d] records", len(mics6814))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntMics6814(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Mics6814 replased [%d] records", len(mics6814))
+	log.Infof("Mics6814 replased [%d] records", len(mics6814))
 
 	return nil
 }

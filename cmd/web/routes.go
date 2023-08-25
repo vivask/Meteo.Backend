@@ -76,8 +76,8 @@ func SetupRouter(db *gorm.DB, ui string) *gin.Engine {
 	public.Use(errors.GinError())
 	public.Use(gin.Recovery())
 	if enablePprof {
-		pprof.Register(public, "monitor/pprof")
-		log.Infof("Monitor pprof enabled")
+		pprof.Register(public, "pprof")
+		log.Info("Monitor pprof enabled")
 	}
 	apiV1Router := public.Group(config.Default.App.Api)
 	RegisterPublicAPIV1(apiV1Router, db)

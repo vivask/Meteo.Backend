@@ -11,7 +11,7 @@ var viperInstance = viper.New()
 var Default Config
 
 func init() {
-	log.Debug("INIT CONFIG")
+	//log.Debug("INIT CONFIG")
 }
 
 // Config struct
@@ -54,6 +54,7 @@ type Config struct {
 		Vrid      uint
 		VirtualIP string
 		Priority  uint
+		Delay     uint
 		LogLevel  string
 	}
 	// Client config
@@ -112,6 +113,9 @@ type Config struct {
 		NsDirect       []string
 		NsProvider     []string
 		Resolvers      []string
+		HealthHost     string
+		ReserveTimeout uint
+		LockTimeout    uint
 		Cached         bool
 		CacheSize      int
 		Unlocker       bool
@@ -303,9 +307,34 @@ type Config struct {
 			Crt string
 			Key string
 		}
+		Sensors struct {
+			Bmp280   bool
+			Aht25    bool
+			Mics6814 bool
+			Radsens  bool
+			Ze08     bool
+			Ds18b20  bool
+		}
 		DbLink   string
 		Mac      string
 		Check    bool
+		LogLevel string
+	}
+	// Radio config
+	Radio struct {
+		Title  string
+		Active bool
+		Api    struct {
+			Bind string
+			Port uint
+			Ca   string
+			Crt  string
+			Key  string
+		}
+		Client struct {
+			Crt string
+			Key string
+		}
 		LogLevel string
 	}
 }

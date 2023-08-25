@@ -44,8 +44,7 @@ func (p esp32API) UpgradeEsp32(c *gin.Context) {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}
-
-	if err := p.repo.UpgradeEsp32(file.Filename); err != nil {
+	if err := p.repo.UpgradeEsp32(dst[1:]); err != nil {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
 	}

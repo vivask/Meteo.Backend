@@ -26,6 +26,10 @@ func (p esp32Service) GetHomePageData() (*entities.HomePage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't read radsens: %w", err)
 	}
+	aht25, err := p.GetLastAht25()
+	if err != nil {
+		return nil, fmt.Errorf("can't read radsens: %w", err)
+	}
 	set, err := p.GetSettings()
 	if err != nil {
 		return nil, fmt.Errorf("can't read radsens: %w", err)
@@ -54,11 +58,21 @@ func (p esp32Service) GetHomePageData() (*entities.HomePage, error) {
 		MaxRadStatAlarm:     set.MaxRadStatAlarm,
 		MaxRadDynAlarm:      set.MaxRadDynAlarm,
 		RadsensHVState:      set.RadsensHVState,
+		RadsensSens:         set.RadsensSensitivity,
 		RadsensCreatedAt:    radsens.CreatedAt,
 		Ze08Ch2o:            ze08ch2o.Ch2o,
 		MaxCh2oAlarm:        set.MaxCh2oAlarm,
 		Ze08CreatedAt:       ze08ch2o.CreatedAt,
+		Aht25Tempr:          aht25.Tempr,
+		Aht25Hum:            aht25.Hum,
+		Aht25CreatedAt:      aht25.CreatedAt,
 		Esp32DateTimeNow:    set.Esp32DateTimeNow,
+		Bmx280Lock:          set.Bmx280Lock,
+		Ds18b20Lock:         set.Ds18b20Lock,
+		Mics6814Lock:        set.Mics6814Lock,
+		RadsensLock:         set.RadsensLock,
+		Ze08Lock:            set.Ze08Lock,
+		Aht25Lock:           set.Aht25Lock,
 	}
 	return hp, nil
 }

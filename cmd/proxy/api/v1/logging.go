@@ -25,3 +25,7 @@ func (p proxyAPI) ClearLogging(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (p proxyAPI) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

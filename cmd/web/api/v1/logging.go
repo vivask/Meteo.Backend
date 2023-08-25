@@ -25,3 +25,7 @@ func (p webAPI) ClearLogging(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (p webAPI) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

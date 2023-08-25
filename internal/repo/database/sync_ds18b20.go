@@ -46,7 +46,7 @@ func (p databaseService) GetNotSyncDs18b20() ([]entities.Ds18b20, error) {
 
 func batchCreateDs18b20(data []entities.Ds18b20, tx *gorm.DB) error {
 
-	chunkSize := int(65534 / unsafe.Sizeof(&entities.Ds18b20{}))
+	chunkSize := int(65534 / unsafe.Sizeof(entities.Ds18b20{}))
 
 	for {
 		if len(data) == 0 {

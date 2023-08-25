@@ -45,7 +45,7 @@ func (p databaseService) GetNotSyncMics6814() ([]entities.Mics6814, error) {
 
 func batchCreateMics6814(data []entities.Mics6814, tx *gorm.DB) error {
 
-	chunkSize := int(65534 / unsafe.Sizeof(&entities.Mics6814{}))
+	chunkSize := int(65534 / unsafe.Sizeof(entities.Mics6814{}))
 
 	for {
 		if len(data) == 0 {

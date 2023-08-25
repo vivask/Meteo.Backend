@@ -38,5 +38,11 @@ func (p databaseAPI) SyncEsp32Tables(c *gin.Context) {
 		return
 	}
 
+	err = p.repo.SyncAht25()
+	if err != nil {
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+
 	c.Status(http.StatusOK)
 }

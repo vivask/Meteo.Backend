@@ -11,6 +11,7 @@ import (
 	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"meteo/internal/log"
+	"meteo/internal/wait"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,7 +31,7 @@ var (
 	startCmd   = &cobra.Command{
 		Use:   "start",
 		Short: "start cluster",
-		Long:  `start cluster, default rest port is 14000`,
+		Long:  `start cluster, default rest port is 10000`,
 		Run:   startCluster,
 	}
 	enablePprof       bool
@@ -41,7 +42,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file (default is $PWD/config/default.yaml)")
-	startCmd.PersistentFlags().Int("10000", 14000, "Port to run Application server on")
+	startCmd.PersistentFlags().Int("10000", 10000, "Port to run Application server on")
 	startCmd.PersistentFlags().BoolVarP(&enablePprof, "pprof", "p", false, "enable pprof mode (default: false)")
 	startCmd.PersistentFlags().BoolVarP(&enableAutomigrate, "migrate", "m", true, "enable auto migrate (default: true)")
 	config.Viper().BindPFlag("port", startCmd.PersistentFlags().Lookup("port"))
@@ -71,9 +72,21 @@ func getDbUrl(link string) string {
 		config.Default.Database.Name)
 }
 
+func WaitForStartPostgres() {
+	const timeout = 10
+	var link = fmt.Sprintf("%s:%d", config.Default.Client.Local, config.Default.Database.Port)
+	wait.List.Set(link)
+	ok := wait.List.Wait(timeout)
+	if !ok {
+		log.Fatalf("timeout occured after waiting for %d seconds", timeout)
+	}
+}
+
 func startCluster(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Cluster.Title, config.Default.Cluster.LogLevel)
+
+	WaitForStartPostgres()
 
 	log.Info("Starting cluster...")
 

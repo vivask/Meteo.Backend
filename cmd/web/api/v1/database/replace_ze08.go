@@ -49,7 +49,7 @@ func intToExtZe08ch2o(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Ze08ch2o replased [%d] records", len(ze08ch2o))
+	log.Infof("Ze08ch2o replased [%d] records", len(ze08ch2o))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntZe08ch2o(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Ze08ch2o replased [%d] records", len(ze08ch2o))
+	log.Infof("Ze08ch2o replased [%d] records", len(ze08ch2o))
 
 	return nil
 }

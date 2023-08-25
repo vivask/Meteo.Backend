@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE USER gogs;
+    CREATE DATABASE gogs;
+    GRANT ALL PRIVILEGES ON DATABASE gogs TO gogs;
+		GRANT ALL ON SCHEMA public TO gogs;
+		GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO gogs;
+		ALTER USER gogs WITH PASSWORD 'of9eAxcGadM8j';
+EOSQL

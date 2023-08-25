@@ -3,7 +3,6 @@ package v1
 import (
 	"fmt"
 	"meteo/internal/config"
-	"meteo/internal/log"
 	"meteo/internal/utils"
 	"regexp"
 )
@@ -11,29 +10,34 @@ import (
 var nutStopped = false
 
 func (p nutAPI) StartUpsDriver() error {
-	cmd := "/usr/sbin/upsdrvctl -u root start"
-	shell := utils.NewShell(cmd)
-	err, out, _ := shell.Run(1)
-	if err != nil {
-		return fmt.Errorf("upsdrive start error: %w", err)
+	/*const retry = 5
+	var out string
+	var err error
+	var try int = 0
+
+	for {
+		err, out, _ = utils.NewShell("/usr/sbin/upsdrvctl -u root start").Run(5)
+		if err == nil {
+			break
+		} else if try >= retry {
+			return fmt.Errorf("upsdrive start error: %w, OUT: %s", err, out)
+		}
+		try++
+		utils.NewShell("/usr/sbin/upsdrvctl -u root shutdown").Run(5)
 	}
 	log.Debugf("Upsdriver start out: %s", out)
 
-	cmd = "/usr/sbin/upsd -u $USER"
-	shell = utils.NewShell(cmd)
-	err, out, _ = shell.Run(1)
+	err, out, _ = utils.NewShell("/usr/sbin/upsd -u $USER").Run(1)
 	if err != nil {
-		return fmt.Errorf("upsd start error: %w", err)
+		return fmt.Errorf("upsd start error: %w, OUT: %s", err, out)
 	}
 	log.Debugf("Upsd start out: %s", out)
 
-	cmd = "/usr/sbin/upsmon"
-	shell = utils.NewShell(cmd)
-	err, out, _ = shell.Run(1)
+	err, out, _ = utils.NewShell("/usr/sbin/upsmon").Run(1)
 	if err != nil {
-		return fmt.Errorf("upsmon start error: %w", err)
+		return fmt.Errorf("upsmon start error: %w, OUT: %s", err, out)
 	}
-	log.Debugf("Upsmon start out: %s", out)
+	log.Debugf("Upsmon start out: %s", out)*/
 
 	return nil
 }
@@ -41,8 +45,7 @@ func (p nutAPI) StartUpsDriver() error {
 func (p nutAPI) HealthUpsDriver() error {
 	if !nutStopped {
 		cmd := fmt.Sprintf("upsc %s@localhost:%d", config.Default.Nut.Driver, config.Default.Nut.Port)
-		shell := utils.NewShell(cmd)
-		err, out, _ := shell.Run(1)
+		err, out, _ := utils.NewShell(cmd).Run(1)
 		if err != nil {
 			return fmt.Errorf("upsdriver health error: %w", err)
 		}

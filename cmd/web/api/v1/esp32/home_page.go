@@ -2,6 +2,7 @@ package esp32
 
 import (
 	"meteo/internal/errors"
+	"meteo/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -72,6 +73,21 @@ func (p esp32API) RadsensDynamicChk(c *gin.Context) {
 
 func (p esp32API) RadsensHVSet(c *gin.Context) {
 	err := p.repo.RadsensHVSet()
+	if err != nil {
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+func (p esp32API) RadsensSetSens(c *gin.Context) {
+	val, err := utils.StringToUint(c.Param("val"))
+	if err != nil {
+		c.Error(errors.NewError(http.StatusBadRequest, err.Error()))
+		return
+	}
+
+	err = p.repo.RadsensSetSens(val)
 	if err != nil {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return

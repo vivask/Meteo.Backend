@@ -49,7 +49,7 @@ func intToExtDs18b20(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Ds18b20 replased [%d] records", len(ds18b20))
+	log.Infof("Ds18b20 replased [%d] records", len(ds18b20))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntDs18b20(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Ds18b20 replased [%d] records", len(ds18b20))
+	log.Infof("Ds18b20 replased [%d] records", len(ds18b20))
 
 	return nil
 }

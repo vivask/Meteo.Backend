@@ -70,6 +70,37 @@ func getDbUrl(link string) string {
 		config.Default.Database.Name)
 }
 
+// Logger provides logrus logger middleware
+func Logger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		t := time.Now()
+		c.Next()
+		// after request
+		latency := time.Since(t)
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		statusCode := c.Writer.Status()
+		path := c.Request.URL.Path
+		message := fmt.Sprintf("[server] | %3d | %12v |%s | %-7s %s %s",
+			statusCode,
+			latency,
+			clientIP,
+			method,
+			path,
+			c.Errors.String(),
+		)
+
+		switch {
+		case statusCode >= 400 && statusCode <= 499:
+			log.Warning(message)
+		case statusCode >= 500:
+			log.Error(message)
+		default:
+			log.Debug(message)
+		}
+	}
+}
+
 func startEsp32(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Esp32.Title, config.Default.Esp32.LogLevel)
@@ -95,9 +126,19 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 	kit.InitClient()
 
 	router := gin.New()
+	router.Use(Logger())
 	router.Use(errors.GinError())
 	router.Use(gin.Recovery())
-	router.Static("/firmware", "./firmware")
+
+	const path = "./firmware"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	router.Static("/firmware", path)
+
 	if enablePprof {
 		pprof.Register(router, "monitor/pprof")
 	}
@@ -141,18 +182,6 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	var healt *http.Server
-	go func() {
-		address := fmt.Sprintf("127.0.0.1:%d", config.Default.App.HealthPort)
-		healt = &http.Server{
-			Addr:    address,
-			Handler: router,
-		}
-		log.Infof("starting %s health on: http://%s", config.Default.Esp32.Title, address)
-		if err := healt.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
-	}()
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
@@ -167,9 +196,6 @@ func startEsp32(cmd *cobra.Command, agrs []string) {
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Esp32.Title, err)
-	}
-	if err := healt.Shutdown(ctx); err != nil {
-		log.Errorf("%s Health Shutdown error: %s", config.Default.Esp32.Title, err)
 	}
 	// catching ctx.Done(). timeout of 1 seconds.
 	<-ctx.Done()

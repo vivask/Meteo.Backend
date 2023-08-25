@@ -19,17 +19,15 @@ var umounted = false
 
 func (p mediaAPI) MountStorage() error {
 	cmd := fmt.Sprintf("mount %s %s", config.Default.Media.Storage.Device, config.Default.Media.Storage.MountPoint)
-	shell := utils.NewShell(cmd)
-	err, _, _ := shell.Run(20)
+	err, _, _ := utils.NewShell(cmd).Run(60)
 	if err != nil {
 		matched, _ := regexp.MatchString("exit status 255", err.Error())
 		if !matched {
 			return fmt.Errorf("mount storage error: %w", err)
 		}
 	}
-	cmd = fmt.Sprintf("chown -R smbuser:users %s/storage", config.Default.Media.Storage.MountPoint)
-	shell = utils.NewShell(cmd)
-	err, _, _ = shell.Run(20)
+	cmd = fmt.Sprintf("chown -R smbuser:users %s", config.Default.Media.Storage.MountPoint)
+	err, _, _ = utils.NewShell(cmd).Run(20)
 	if err != nil {
 		return fmt.Errorf("chown storage error: %w", err)
 	}
@@ -38,8 +36,7 @@ func (p mediaAPI) MountStorage() error {
 
 func (p mediaAPI) UmountStorage() error {
 	cmd := fmt.Sprintf("umount %s", config.Default.Media.Storage.MountPoint)
-	shell := utils.NewShell(cmd)
-	err, _, _ := shell.Run(20)
+	err, _, _ := utils.NewShell(cmd).Run(20)
 	if err != nil {
 		return fmt.Errorf("umount storage error: %w", err)
 	}
@@ -52,8 +49,7 @@ func (p mediaAPI) IsMounted() bool {
 		return false
 	} else {
 		cmd := fmt.Sprintf("df -P | grep '%s' | grep '%s' || echo 1", config.Default.Media.Storage.Device, config.Default.Media.Storage.MountPoint)
-		shell := utils.NewShell(cmd)
-		err, out, _ := shell.Run(1)
+		err, out, _ := utils.NewShell(cmd).Run(1)
 		if err != nil {
 			log.Errorf("mount storage error: %v", err)
 			return false

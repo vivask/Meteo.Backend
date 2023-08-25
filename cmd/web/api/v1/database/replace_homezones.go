@@ -49,7 +49,7 @@ func intToExtHomezone(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Homezone replased [%d] records", len(homezones))
+	log.Infof("Homezone replased [%d] records", len(homezones))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntHomezone(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Homezone replased [%d] records", len(homezones))
+	log.Infof("Homezone replased [%d] records", len(homezones))
 
 	return nil
 }

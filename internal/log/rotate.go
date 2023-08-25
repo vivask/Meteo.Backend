@@ -89,7 +89,7 @@ func Rotate(fName string, MaxSize int64) error {
 		}
 		defer fi.Close()
 
-		fo, err := os.OpenFile(fName+"."+time.Now().Format(time.RFC3339), os.O_WRONLY|os.O_CREATE, 0644)
+		fo, err := os.OpenFile(fName+"."+time.Now().Format(time.RFC3339), os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}
@@ -101,16 +101,19 @@ func Rotate(fName string, MaxSize int64) error {
 		part := make([]byte, chunksize)
 		for {
 			if count, err = r.Read(part); err != nil {
+				Errorf("Read part error: %v", err)
 				break
 			}
 			if _, err := w.Write(part[:count]); err != nil {
+				Errorf("Write part error: %v", err)
 				return err
 			}
 		}
-		err = fi.Truncate(0)
-		if err != nil {
-			return err
-		}
+		// err = fi.Truncate(0)
+		// if err != nil {
+		// 	Errorf("Truncate error: %v", err)
+		// 	return err
+		// }
 	}
 	return nil
 }

@@ -47,6 +47,13 @@ func CreateSyncTables(db *gorm.DB) error {
 				},
 			},
 			{
+				ID: "aht25",
+				Params: []entities.SyncParams{
+					{SyncTypes: entities.SyncTypes{ID: "sync"}},
+					{SyncTypes: entities.SyncTypes{ID: "replace"}},
+				},
+			},
+			{
 				ID: "ssh_keys",
 				Params: []entities.SyncParams{
 					{SyncTypes: entities.SyncTypes{ID: "replace"}},
@@ -102,6 +109,12 @@ func CreateSyncTables(db *gorm.DB) error {
 			},
 			{
 				ID: "radcheck",
+				Params: []entities.SyncParams{
+					{SyncTypes: entities.SyncTypes{ID: "replace"}},
+				},
+			},
+			{
+				ID: "radverified",
 				Params: []entities.SyncParams{
 					{SyncTypes: entities.SyncTypes{ID: "replace"}},
 				},

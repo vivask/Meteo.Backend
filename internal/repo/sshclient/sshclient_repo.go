@@ -10,6 +10,7 @@ import (
 // SshClientService interface
 type SshClientService interface {
 	AddSshKey(sshKey entities.SshKeys) (uint32, error)
+	EditSshKey(sshKey entities.SshKeys) error
 	DelSshKey(id uint32) error
 	GetAllSshKeys(pageable dto.Pageable) ([]entities.SshKeys, error)
 	GetSshKeysByHost(host string) ([]entities.SshKeys, error)

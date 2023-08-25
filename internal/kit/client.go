@@ -13,13 +13,14 @@ import (
 	"net/http"
 	URL "net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type ServicePort int
 
-var remoteDead bool = false
+//var remoteDead bool = false
 
 type confService struct {
 	port ServicePort
@@ -161,12 +162,14 @@ func GetService(c confService) *Service {
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
+				Timeout:   10 * time.Second,
+				KeepAlive: 10 * time.Second,
 				DualStack: true,
 			}).DialContext,
 			ForceAttemptHTTP2:     true,
 			MaxIdleConns:          100,
+			MaxConnsPerHost:       100,
+			MaxIdleConnsPerHost:   100,
 			IdleConnTimeout:       90 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
@@ -188,14 +191,22 @@ func GetServiceName(url string) string {
 	return split[1]
 }
 
-func (c *Client) internal(port ServicePort) string {
-	return fmt.Sprintf("https://%s:%d/api/v1", c.local, port)
+func urlPrepare(port ServicePort, address string) string {
+	var sb strings.Builder
+	sb.WriteString("https://")
+	sb.WriteString(address)
+	sb.WriteString(":")
+	sb.WriteString(strconv.Itoa(int(port)))
+	sb.WriteString(config.Default.App.Api)
+	return sb.String()
+}
 
+func (c *Client) internal(port ServicePort) string {
+	return urlPrepare(port, c.local)
 }
 
 func (c *Client) external(port ServicePort) string {
-	return fmt.Sprintf("https://%s:%d/api/v1", c.remote, port)
-
+	return urlPrepare(port, c.remote)
 }
 
 type params struct {
@@ -206,27 +217,31 @@ type params struct {
 
 func (c *Client) prepare(path string, method string, ext bool) (*params, error) {
 
-	p := &params{}
-	serviceName := GetServiceName(path)
+	var serviceName string = GetServiceName(path)
+	var service *Service
+	var ok bool
 
-	if _, ok := c.clients[serviceName]; !ok {
+	if service, ok = c.clients[serviceName]; !ok {
 		return nil, fmt.Errorf("unknown service [%s]", serviceName)
 	}
 
-	p.service = c.clients[serviceName]
-
-	if p.service == nil {
+	if service == nil {
 		return nil, fmt.Errorf("not implemented service [%s]", serviceName)
 	}
 
-	p.url = fmt.Sprintf("%s%s", c.internal(p.service.port), path)
+	var sb strings.Builder
 	if ext {
-		p.url = fmt.Sprintf("%s%s", c.external(p.service.port), path)
+		sb.WriteString(c.external(service.port))
+	} else {
+		sb.WriteString(c.internal(service.port))
 	}
+	sb.WriteString(path)
 
-	p.method = method
-
-	return p, nil
+	return &params{
+		method:  method,
+		service: service,
+		url:     sb.String(),
+	}, nil
 }
 
 func getJsonRequest(url, method string, r interface{}) (*http.Request, error) {
@@ -287,7 +302,6 @@ func (c *Client) post(path, content string, r interface{}, method string, ext bo
 	if content == "application/json" {
 		req, err = getJsonRequest(p.url, p.method, r)
 	} else {
-		log.Info("getMultipartRequest")
 		req, err = getMultipartRequest(p.url, p.method, r)
 	}
 	if err != nil {
@@ -341,7 +355,8 @@ func (c *Client) PostExt(url string, r interface{}) (body []byte, err error) {
 		log.Debug("Server is in single mode")
 		return nil, errors.New("single mode on, can't external send")
 	}
-	if IsAliveRemote() {
+	return c.post(url, "application/json", r, http.MethodPost, EXTERNAL)
+	/*if IsAliveRemote() {
 		remoteDead = false
 		return c.post(url, "application/json", r, http.MethodPost, EXTERNAL)
 	} else {
@@ -351,7 +366,7 @@ func (c *Client) PostExt(url string, r interface{}) (body []byte, err error) {
 		} else {
 			return nil, nil
 		}
-	}
+	}*/
 }
 
 func (c *Client) PutInt(url string, r interface{}) (body []byte, err error) {
@@ -363,7 +378,8 @@ func (c *Client) PutExt(url string, r interface{}) (body []byte, err error) {
 		log.Debug("Server is in single mode")
 		return nil, errors.New("single mode on, can't external send")
 	}
-	if IsAliveRemote() {
+	return c.post(url, "application/json", r, http.MethodPut, EXTERNAL)
+	/*if IsAliveRemote() {
 		remoteDead = false
 		return c.post(url, "application/json", r, http.MethodPut, EXTERNAL)
 	} else {
@@ -373,7 +389,7 @@ func (c *Client) PutExt(url string, r interface{}) (body []byte, err error) {
 		} else {
 			return nil, nil
 		}
-	}
+	}*/
 }
 
 func (c *Client) PutMain(url string, r interface{}) (body []byte, err error) {
@@ -401,7 +417,8 @@ func (c *Client) GetExt(url string) (body []byte, err error) {
 		log.Debug("Server is in single mode")
 		return nil, errors.New("single mode on, can't external send")
 	}
-	if IsAliveRemote() {
+	return c.get(url, http.MethodGet, EXTERNAL)
+	/*if IsAliveRemote() {
 		remoteDead = false
 		return c.get(url, http.MethodGet, EXTERNAL)
 	} else {
@@ -411,7 +428,7 @@ func (c *Client) GetExt(url string) (body []byte, err error) {
 		} else {
 			return nil, nil
 		}
-	}
+	}*/
 }
 
 func (c *Client) GetMain(url string) (body []byte, err error) {
@@ -439,7 +456,8 @@ func (c *Client) DeleteExt(url string) (body []byte, err error) {
 		log.Debug("Server is in single mode")
 		return nil, errors.New("single mode on, can't external send")
 	}
-	if IsAliveRemote() {
+	return c.get(url, http.MethodDelete, EXTERNAL)
+	/*if IsAliveRemote() {
 		remoteDead = false
 		return c.get(url, http.MethodDelete, EXTERNAL)
 	} else {
@@ -449,5 +467,5 @@ func (c *Client) DeleteExt(url string) (body []byte, err error) {
 		} else {
 			return nil, nil
 		}
-	}
+	}*/
 }

@@ -123,7 +123,7 @@ func (p serverAPI) StorageHealth() error {
 
 	matched, _ := regexp.MatchString("/storage/media", out)
 	if !matched {
-		return fmt.Errorf("storage not healthy: %s", out)
+		return fmt.Errorf("/storage/media not available")
 	}
 
 	return nil

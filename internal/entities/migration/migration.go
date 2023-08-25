@@ -90,7 +90,7 @@ func AutoMigrate(db *gorm.DB, migrate bool) {
 		err := tx.AutoMigrate(&entities.User{}, &entities.Bmx280{}, &entities.SyncTables{}, &entities.Ds18b20{},
 			&entities.GitUsers{}, &entities.Logging{}, &entities.Mics6814{}, &entities.Blocklist{}, &entities.Homezone{},
 			&entities.ToVpnManual{}, &entities.ToVpnAuto{}, &entities.ToVpnIgnore{}, &entities.Radsens{},
-			&entities.Tasks{}, &entities.Jobs{}, &entities.SshHosts{}, &entities.SshKeys{}, &entities.Ze08ch2o{},
+			&entities.Tasks{}, &entities.Jobs{}, &entities.SshHosts{}, &entities.SshKeys{}, &entities.Ze08ch2o{}, &entities.Aht25{},
 			&entities.Radacct{}, &entities.Radcheck{}, &entities.Radgroupcheck{}, &entities.Radgroupreply{}, &entities.Radreply{},
 			&entities.Radusergroup{}, &entities.Radpostauth{}, &entities.Nas{}, &entities.Radverified{})
 		if err != nil {

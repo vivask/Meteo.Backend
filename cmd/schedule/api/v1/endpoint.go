@@ -10,4 +10,5 @@ func (p scheduleAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	schedule.GET("/health", p.GetHealth)
 	schedule.GET("/logging", p.GetLogging)
 	schedule.PUT("/logging", p.ClearLogging)
+	schedule.GET("/logging/empty", p.IsEmptyLog)
 }

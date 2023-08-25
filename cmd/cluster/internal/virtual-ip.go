@@ -59,9 +59,7 @@ func StartupVirtualIP(ctx context.Context, started chan bool) error {
 }
 
 func Handler(alive, leader bool) {
-	if !kit.IsMain() {
-		go reloadScheduler()
-	}
+	go reloadScheduler()
 }
 
 func setStateReloadScheduler(state bool) {

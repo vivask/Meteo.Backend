@@ -4,7 +4,7 @@ import "github.com/gin-gonic/gin"
 
 func (p proxyAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	proxy := router.Group("/proxy")
-	proxy.Use(p.Middleware())
+	//proxy.Use(p.Middleware())
 	proxy.GET("/status/get", p.GetState)
 	proxy.PUT("/server/start", p.SetStart)
 	proxy.PUT("/server/stop", p.SetStop)
@@ -22,4 +22,5 @@ func (p proxyAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	proxy.GET("/health", p.GetHealth)
 	proxy.GET("/logging", p.GetLogging)
 	proxy.PUT("/logging", p.ClearLogging)
+	proxy.GET("/logging/empty", p.IsEmptyLog)
 }

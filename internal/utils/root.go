@@ -60,3 +60,7 @@ func GetMD5StringlnSum(str string) string {
 	b := []byte(str + "\n")
 	return fmt.Sprintf("%X", md5.Sum(b))
 }
+
+func StringToBool(s string) bool {
+	return s == "true"
+}

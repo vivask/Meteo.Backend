@@ -122,6 +122,14 @@ func ClearLogging() error {
 	return os.Truncate(logFileName, 0)
 }
 
+func IsEmptyLog() bool {
+	fi, err := os.Stat(logFileName)
+	if err != nil {
+		return true
+	}
+	return fi.Size() == 0
+}
+
 // Error logs a message using ERROR as log level.
 var Error = Default.Error
 

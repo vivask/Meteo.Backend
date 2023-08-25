@@ -16,6 +16,7 @@ import (
 	entities "meteo/internal/entities/migration"
 	"meteo/internal/kit"
 	"meteo/internal/log"
+	"meteo/internal/wait"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -68,9 +69,21 @@ func getDbUrl(link string) string {
 		config.Default.Database.Name)
 }
 
+func WaitForStartCluster() {
+	const timeout = 10
+	var link = fmt.Sprintf("%s:%d", config.Default.Client.Local, config.Default.Cluster.Api.Port)
+	wait.List.Set(link)
+	ok := wait.List.Wait(timeout)
+	if !ok {
+		log.Fatalf("timeout occured after waiting for %d seconds", timeout)
+	}
+}
+
 func startWebServer(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Web.Title, config.Default.Web.LogLevel)
+
+	WaitForStartCluster()
 
 	log.Info("Starting http-server...")
 
@@ -93,6 +106,14 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 	setupDoc()
 
 	kit.InitClient()
+
+	const path = "./firmware"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	router := SetupRouter(db, config.Default.Web.Ui)
 
@@ -156,18 +177,6 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	var healt *http.Server
-	go func() {
-		address := fmt.Sprintf("127.0.0.1:%d", config.Default.App.HealthPort)
-		healt = &http.Server{
-			Addr:    address,
-			Handler: router,
-		}
-		log.Infof("starting %s health on: http://%s", config.Default.Web.Title, address)
-		if err := healt.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
-	}()
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
@@ -183,9 +192,7 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %v", config.Default.Web.Title, err)
 	}
-	if err := healt.Shutdown(ctx); err != nil {
-		log.Errorf("%s Health Shutdown error: %s", config.Default.Web.Title, err)
-	} // catching ctx.Done(). timeout of 1 seconds.
+	// catching ctx.Done(). timeout of 2 seconds.
 	<-ctx.Done()
 	log.Infof("%s Server exiting", config.Default.Web.Title)
 }

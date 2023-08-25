@@ -3,15 +3,27 @@ package repo
 import (
 	"fmt"
 	"meteo/internal/entities"
+	m "meteo/internal/entities/migration"
 	"meteo/internal/log"
 )
 
 const _TOVPN_AUTO_ = "tovpn_autos"
 
+func (p databaseService) GetAllToVpnAuto() ([]entities.ToVpnAuto, error) {
+	var hosts []entities.ToVpnAuto
+	err := p.db.Find(&hosts).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read tovpn_autos: %w", err)
+	}
+	return hosts, err
+}
+
 func (p databaseService) ReplaceToVpnAuto(readings []entities.ToVpnAuto) error {
+	m.AutoSyncOff(_TOVPN_AUTO_)
+	defer m.AutoSyncOn(_TOVPN_AUTO_)
 
 	tx := p.db.Begin()
-	err := tx.Where("id IS NOT NULL").Delete(&entities.ToVpnAuto{}).Error
+	err := tx.Where("hostname IS NOT NULL").Delete(&entities.ToVpnAuto{}).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("delete tovpn_autos error: %w", err)

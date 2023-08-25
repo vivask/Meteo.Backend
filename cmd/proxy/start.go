@@ -10,6 +10,7 @@ import (
 	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"meteo/internal/log"
+	"meteo/internal/wait"
 	"net/http"
 	"os"
 	"os/signal"
@@ -70,9 +71,21 @@ func getDbUrl(link string) string {
 		config.Default.Database.Name)
 }
 
+func WaitForStartCluster() {
+	const timeout = 10
+	var link = fmt.Sprintf("%s:%d", config.Default.Client.Local, config.Default.Cluster.Api.Port)
+	wait.List.Set(link)
+	ok := wait.List.Wait(timeout)
+	if !ok {
+		log.Fatalf("timeout occured after waiting for %d seconds", timeout)
+	}
+}
+
 func startProxy(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.Proxy.Title, config.Default.Proxy.LogLevel)
+
+	WaitForStartCluster()
 
 	log.Info("Starting proxy server...")
 
@@ -141,19 +154,6 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	var healt *http.Server
-	go func() {
-		address := fmt.Sprintf("127.0.0.1:%d", config.Default.App.HealthPort)
-		healt = &http.Server{
-			Addr:    address,
-			Handler: router,
-		}
-		log.Infof("starting %s health on: http://%s", config.Default.Proxy.Title, address)
-		if err := healt.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
-	}()
-
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
@@ -166,9 +166,6 @@ func startProxy(cmd *cobra.Command, agrs []string) {
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.Proxy.Title, err)
-	}
-	if err := healt.Shutdown(ctx); err != nil {
-		log.Errorf("%s Health Shutdown error: %s", config.Default.Proxy.Title, err)
 	}
 
 	<-ctx.Done()

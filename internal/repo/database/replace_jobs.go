@@ -3,12 +3,25 @@ package repo
 import (
 	"fmt"
 	"meteo/internal/entities"
+	m "meteo/internal/entities/migration"
 	"meteo/internal/log"
 )
 
 const _JOBS_ = "jobs"
 
+func (p databaseService) GetAllJobs() ([]entities.Jobs, error) {
+	var jobs []entities.Jobs
+	err := p.db.Preload("Params").Preload("Executor").
+		Preload("Period").Preload("Task.Params").Find(&jobs).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read jobs: %w", err)
+	}
+	return jobs, err
+}
+
 func (p databaseService) ReplaceJobs(readings []entities.Jobs) error {
+	m.AutoSyncOff(_JOBS_)
+	defer m.AutoSyncOn(_JOBS_)
 
 	tx := p.db.Begin()
 	err := tx.Where("id IS NOT NULL").Delete(&entities.Jobs{}).Error

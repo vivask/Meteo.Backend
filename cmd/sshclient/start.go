@@ -10,6 +10,7 @@ import (
 	"meteo/internal/errors"
 	"meteo/internal/kit"
 	"meteo/internal/log"
+	"meteo/internal/wait"
 	"net/http"
 	"os"
 	"os/signal"
@@ -70,11 +71,24 @@ func getDbUrl(link string) string {
 		config.Default.Database.Name)
 }
 
+func WaitForStartCluster() {
+	const timeout = 10
+	var link = fmt.Sprintf("%s:%d", config.Default.Client.Local, config.Default.Cluster.Api.Port)
+	wait.List.Set(link)
+	ok := wait.List.Wait(timeout)
+	if !ok {
+		log.Fatalf("timeout occured after waiting for %d seconds", timeout)
+	}
+}
+
 func startSshClient(cmd *cobra.Command, agrs []string) {
 
 	log.SetLogger(config.Default.SshClient.Title, config.Default.SshClient.LogLevel)
 
+	WaitForStartCluster()
+
 	log.Info("Starting sshclient...")
+
 	db, err := gorm.Open(postgres.Open(getDbUrl(config.Default.SshClient.DbLink)))
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
@@ -139,18 +153,6 @@ func startSshClient(cmd *cobra.Command, agrs []string) {
 		}
 	}()
 
-	var healt *http.Server
-	go func() {
-		address := fmt.Sprintf("127.0.0.1:%d", config.Default.App.HealthPort)
-		healt = &http.Server{
-			Addr:    address,
-			Handler: router,
-		}
-		log.Infof("starting %s health on: http://%s", config.Default.SshClient.Title, address)
-		if err := healt.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("listen: %s", err))
-		}
-	}()
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
@@ -166,9 +168,7 @@ func startSshClient(cmd *cobra.Command, agrs []string) {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Errorf("%s Server Shutdown error: %s", config.Default.SshClient.Title, err)
 	}
-	if err := healt.Shutdown(ctx); err != nil {
-		log.Errorf("%s Health Shutdown error: %s", config.Default.SshClient.Title, err)
-	} // catching ctx.Done(). timeout of 1 seconds.
+	// catching ctx.Done(). timeout of 2 seconds.
 	<-ctx.Done()
 	log.Infof("%s Server exiting", config.Default.SshClient.Title)
 }

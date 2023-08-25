@@ -1,0 +1,1 @@
+import{r as t}from"./vendor-7e3b54f2.js";const u=e=>JSON.parse(JSON.stringify(e));function h(e,s){const l=t(null),n=t(!1);return{localProp:l,show:a=>{n.value=!!(a!=null&&a.id),l.value=u(a),e.value.show()},handleSubmit:()=>{e.value.hide(),s("submit",{data:u(l.value),update:n.value})},handleCancel:()=>{e.value.hide(),s("cancel")},isUpdate:n}}export{h as u};

@@ -45,7 +45,7 @@ func (p databaseService) GetNotSyncBmx280() ([]entities.Bmx280, error) {
 
 func batchCreateBmx280(data []entities.Bmx280, tx *gorm.DB) error {
 
-	chunkSize := int(65534 / unsafe.Sizeof(&entities.Bmx280{}))
+	chunkSize := int(65534 / unsafe.Sizeof(entities.Bmx280{}))
 
 	for {
 		if len(data) == 0 {

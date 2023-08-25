@@ -13,16 +13,13 @@ import (
 var sambaStopped = false
 
 func (p mediaAPI) StartSamba() error {
-	cmd := "nmbd --configfile=/etc/samba/smb.conf"
-	shell := utils.NewShell(cmd)
-	err, out, _ := shell.Run(1)
+	err, out, _ := utils.NewShell("nmbd --configfile=/etc/samba/smb.conf").Run(1)
 	if err != nil {
 		return fmt.Errorf("nmbd start error: %w", err)
 	}
 	log.Debugf("Smbd start out: %s", out)
-	cmd = "smbd --configfile=/etc/samba/smb.conf --no-process-group"
-	shell = utils.NewShell(cmd)
-	err, out, _ = shell.Run(1)
+
+	err, out, _ = utils.NewShell("smbd --configfile=/etc/samba/smb.conf --no-process-group").Run(1)
 	if err != nil {
 		return fmt.Errorf("smbd start error: %w", err)
 	}
@@ -32,32 +29,27 @@ func (p mediaAPI) StartSamba() error {
 }
 
 func (p mediaAPI) StopSamba() error {
-	cmd := "pidof smbd"
-	shell := utils.NewShell(cmd)
-	err, pid_smbd, _ := shell.Run(1)
+	err, pid_smbd, _ := utils.NewShell("pidof smbd").Run(1)
 	if err != nil {
-		return fmt.Errorf("%s error: %w", cmd, err)
+		return err
 	}
-	cmd = "pidof nmbd"
-	shell = utils.NewShell(cmd)
-	err, pid_nmbd, _ := shell.Run(1)
+
+	err, pid_nmbd, _ := utils.NewShell("pidof nmbd").Run(1)
 	if err != nil {
-		return fmt.Errorf("%s error: %w", cmd, err)
+		return err
 	}
-	cmd = fmt.Sprintf("kill -9 %s %s", pid_nmbd, pid_smbd)
-	shell = utils.NewShell(cmd)
-	err, _, _ = shell.Run(1)
+
+	cmd := fmt.Sprintf("kill -9 %s %s", pid_nmbd, pid_smbd)
+	err, _, _ = utils.NewShell(cmd).Run(1)
 	if err != nil {
-		return fmt.Errorf("%s error: %w", cmd, err)
+		return err
 	}
 	return nil
 }
 
 func (p mediaAPI) HealthSamba() error {
 	if !sambaStopped {
-		cmd := "smbclient -L '\\localhost\\' -U 'guest%' -m SMB3"
-		shell := utils.NewShell(cmd)
-		err, _, _ := shell.Run(1)
+		err, _, _ := utils.NewShell("smbclient -L '\\127.0.0.1\\' -U 'guest%' -m SMB3").Run(1)
 		if err != nil {
 			return fmt.Errorf("smbd health error: %w", err)
 		}

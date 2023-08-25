@@ -10,6 +10,7 @@ func (p mediaAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	media.GET("/health/transmission", p.GetHealthTransmission)
 	media.GET("/logging", p.GetLogging)
 	media.PUT("/logging", p.ClearLogging)
+	media.GET("/logging/empty", p.IsEmptyLog)
 	media.PUT("/samba/start", p.SambaStart)
 	media.PUT("/samba/stop", p.SambaStop)
 	media.PUT("/samba/restart", p.SambaRestart)

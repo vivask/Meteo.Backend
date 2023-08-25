@@ -49,7 +49,7 @@ func intToExtGitUsers(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("GitUsers replased [%d] records", len(git_users))
+	log.Infof("GitUsers replased [%d] records", len(git_users))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntGitUsers(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("GitUsers replased [%d] records", len(git_users))
+	log.Infof("GitUsers replased [%d] records", len(git_users))
 
 	return nil
 }

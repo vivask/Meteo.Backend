@@ -11,31 +11,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
+/*const (
 	logFile  = "upssched"
 	logLevel = "info"
-)
+)*/
 
 func commbad(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 	nutLogging("UPS communications failure")
 }
 
 func commok(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 	nutLogging("UPS communications restored")
 }
 
 func nocomm(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 	nutLogging("UPS communications cannot be established")
 }
 
 func powerout(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 
 	command := fmt.Sprintf("upscmd -u %s -p %s %s@localhost:%d shutdown.return",
@@ -60,7 +60,7 @@ func powerout(cmd *cobra.Command, agrs []string) {
 }
 
 func shutdownnow(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 
 	time.Sleep(10 * time.Second)
@@ -80,7 +80,7 @@ func shutdownnow(cmd *cobra.Command, agrs []string) {
 }
 
 func shutdowncritical(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 
 	command := "upsmon -c fsd"
@@ -95,7 +95,7 @@ func shutdowncritical(cmd *cobra.Command, agrs []string) {
 }
 
 func powerup(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 
 	nutLogging("UPS on line. Shutdown aborted.")
@@ -107,7 +107,7 @@ func powerup(cmd *cobra.Command, agrs []string) {
 }
 
 func replbatt(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 
 	nutLogging(fmt.Sprintf("UPS %s battery needs to be replaced", config.Default.Nut.Driver))
@@ -119,7 +119,7 @@ func replbatt(cmd *cobra.Command, agrs []string) {
 }
 
 func noparent(cmd *cobra.Command, agrs []string) {
-	log.SetLogger(logFile, logLevel)
+	//log.SetLogger(logFile, logLevel)
 	kit.InitClient()
 	nutLogging("upsmon parent process died - shutdown impossible")
 }

@@ -18,7 +18,7 @@ func FromJSON(r *http.Response) (body []byte, err error) {
 	var gr GenericResponse
 	body, err = io.ReadAll(r.Body)
 	if err != nil {
-		return
+		return body, err
 	}
 	err = json.Unmarshal(body, &gr)
 	if err != nil {

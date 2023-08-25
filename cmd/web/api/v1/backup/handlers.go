@@ -3,11 +3,9 @@ package backup
 import (
 	"encoding/json"
 	"fmt"
-	"meteo/internal/config"
 	"meteo/internal/entities"
 	"meteo/internal/errors"
 	"meteo/internal/kit"
-	"meteo/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,19 +13,27 @@ import (
 
 func (p backupAPI) GetServicesState(c *gin.Context) {
 
-	var state entities.Services
+	var (
+		state entities.Services
+		body  []byte
+		err   error
+	)
 
-	state.ClusterService = kit.IsBackupHealthy("/cluster/health")
-	state.MessangerService = kit.IsBackupHealthy("/messanger/health")
-	state.ProxyService = kit.IsBackupHealthy("/proxy/health")
-	state.SshclientService = kit.IsBackupHealthy("/sshclient/health")
-	state.ScheduleService = kit.IsBackupHealthy("/schedule/health")
-	state.WebService = kit.IsBackupHealthy("/web/health")
-	state.Esp32Service = kit.IsBackupHealthy("/esp32/health")
-	state.RadiusService = kit.IsBackupHealthy("/radius/health")
-	state.StorageService = kit.IsBackupHealthy("/sshclient/server/backup/storage/helath")
+	if kit.IsBackupHealthy("/sshclient/health") {
+		body, err = kit.GetBackup("/sshclient/backup/state")
+	} else {
+		body, err = kit.GetBackup("/cluster/backup/state")
+	}
+	if err != nil {
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
+		return
+	}
 
-	state.PostgresService = utils.RawConnect(config.Default.Client.Local, []string{"5432"})
+	err = json.Unmarshal(body, &state)
+	if err != nil {
+		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": state})
 }

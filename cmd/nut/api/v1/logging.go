@@ -37,3 +37,7 @@ func (p nutAPI) LoggingMessage(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (p nutAPI) IsEmptyLog(c *gin.Context) {
+	c.JSON(http.StatusOK, log.IsEmptyLog())
+}

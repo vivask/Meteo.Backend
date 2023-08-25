@@ -1,10 +1,8 @@
-FROM golang:alpine3.16 as gobuilder
+ARG GO_VERSION=1.20
 
+FROM golang:${GO_VERSION}-alpine as gobuilder
 ENV GIN_MODE=release
-
-RUN apk add git
-RUN apk add --update gcc musl-dev
-
+#RUN apk add --no-cache git
 WORKDIR /app
 
 ADD ./go.mod /app/go.mod
@@ -12,8 +10,9 @@ ADD ./go.sum /app/go.sum
 RUN go mod download
 
 ADD . /app
-RUN go build -o ./nut ./cmd/nut
-RUN go build -o ./upssched-cmd ./cmd/upssched-cmd
+RUN CGO_ENABLED=0 go build -installsuffix 'static' -o ./nut ./cmd/nut
+RUN CGO_ENABLED=0 go build -installsuffix 'static' -o ./upssched-cmd ./cmd/upssched-cmd
+#RUN CGO_ENABLED=0 go build -installsuffix 'static' -o ./healthy ./cmd/healthy
 
 FROM alpine:3.16
 ENV GIN_MODE=release
@@ -47,11 +46,13 @@ RUN echo '' >> /etc/nut/ups.conf \
   && echo 'port = auto' >> /etc/nut/ups.conf \
   && echo 'desc = "WOW-700U"' >> /etc/nut/ups.conf
   #&& echo 'vendorid = 0d9f' >> /etc/nut/ups.conf \
-  #&& echo 'productid = 0004' >> /etc/nut/ups.conf \
+  #&& echo 'productid = 0004' >> /etc/nut/ups.conf
   #&& echo 'pollinterval = 10' >> /etc/nut/ups.conf
+#RUN echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0d9f", MODE="0666"' >> /etc/udev/rules.d/50-ups-powercom.rules \
+#  && echo 'SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="0d9f", ATTR{idProduct}=="0004", RUN+="/usr/sbin/upsdrvctl -u root shutdown"' >> /etc/udev/rules.d/50-ups-powercom.rules
 RUN --mount=type=secret,id=nut_env source /run/secrets/nut_env \
-  && echo '['${API_USER}']' >> /etc/nut/upsd.users \
-  && echo 'password = '${API_PASSWORD} >> /etc/nut/upsd.users \
+  && echo '['$API_USER']' >> /etc/nut/upsd.users \
+  && echo 'password = '$API_PASSWORD >> /etc/nut/upsd.users \
   && echo 'upsmon = master' >> /etc/nut/upsd.users \
   && echo 'actions = SET' >> /etc/nut/upsd.users \
   && echo 'actions = FSD' >> /etc/nut/upsd.users \
@@ -77,7 +78,7 @@ RUN --mount=type=secret,id=nut_env source /run/secrets/nut_env \
   && echo 'NOTIFYFLAG REPLBATT EXEC' >> /etc/nut/upsmon.conf \
   && echo 'NOTIFYFLAG NOCOMM EXEC' >> /etc/nut/upsmon.conf \
   && echo 'NOTIFYFLAG NOPARENT EXEC' >> /etc/nut/upsmon.conf \
-  && echo 'MONITOR powercom@localhost 1' ${API_USER} ${API_PASSWORD} 'master' >> /etc/nut/upsmon.conf \
+  && echo 'MONITOR powercom@localhost 1' $API_USER $API_PASSWORD 'master' >> /etc/nut/upsmon.conf \
   && echo 'RUN_AS_USER' $USER >> /etc/nut/upsmon.conf
 RUN echo 'PIPEFN /tmp/upspipe' >> /etc/nut/upssched.conf \
   && echo 'LOCKFN /tmp/upslock' >> /etc/nut/upssched.conf \
@@ -94,4 +95,4 @@ RUN echo 'PIPEFN /tmp/upspipe' >> /etc/nut/upssched.conf \
 
 COPY --from=gobuilder /app/nut /bin/nut
 COPY --from=gobuilder /app/upssched-cmd /usr/bin/upssched-cmd
-ADD ./wait-for /usr/local/sbin/wait-for
+#COPY --from=gobuilder /app/healthy /bin/healthy

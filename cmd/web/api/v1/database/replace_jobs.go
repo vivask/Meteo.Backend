@@ -49,7 +49,7 @@ func intToExtJobs(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Jobs replased [%d] records", len(jobs))
+	log.Infof("Jobs replased [%d] records", len(jobs))
 
 	return nil
 }
@@ -73,7 +73,7 @@ func extToIntJobs(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Jobs replased [%d] records", len(jobs))
+	log.Infof("Jobs replased [%d] records", len(jobs))
 
 	return nil
 }

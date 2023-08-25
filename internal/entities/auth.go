@@ -3,7 +3,7 @@ package entities
 import "time"
 
 type User struct {
-	ID        string    `gorm:"column:id;not null;primaryKey;unique;index" json:"id"`
+	ID        string    `gorm:"column:id;not null;primaryKey;size:45" json:"id"`
 	Username  string    `gorm:"column:username;unique;not null;size:45" json:"username"`
 	Email     string    `gorm:"column:email;unique;not null;size:255" json:"email"`
 	Password  string    `gorm:"column:password;not null;size:255" json:"password"`

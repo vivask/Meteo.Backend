@@ -12,7 +12,7 @@ import (
 type ProxyAPI interface {
 	RegisterAPIV1(router *gin.RouterGroup)
 	Start() error
-	Middleware() gin.HandlerFunc
+	//Middleware() gin.HandlerFunc
 	GetState(c *gin.Context)
 	SetStart(c *gin.Context)
 	SetStop(c *gin.Context)
@@ -37,7 +37,7 @@ func NewProxyAPI(db *gorm.DB) ProxyAPI {
 	}
 }
 
-func (p proxyAPI) Middleware() gin.HandlerFunc {
+/*func (p proxyAPI) Middleware() gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 	})
-}
+}*/

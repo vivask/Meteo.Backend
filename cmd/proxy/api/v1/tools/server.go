@@ -72,6 +72,8 @@ type Server struct {
 	mutex           sync.Mutex
 	queu            map[string]struct{}
 	links           Connected
+	reserveTimer    *time.Timer
+	status          bool
 }
 
 // NewServer constructs a new server but does not start it, use Run to start it afterwards.
@@ -111,6 +113,8 @@ func NewServer() *Server {
 		adblockOn:       config.Default.Proxy.AdBlock,
 		unlockerOn:      config.Default.Proxy.Unlocker,
 		queu:            map[string]struct{}{},
+		reserveTimer:    nil,
+		status:          true,
 	}
 	return s
 }
@@ -202,7 +206,7 @@ func (s *Server) tlsconnector(upstreamServer string) func() (*dns.Conn, error) {
 				link.Try = 0
 				log.Warningf("Server [%s] disabled an hour", dialableAddress)
 				go func() {
-					time.Sleep(1 * time.Hour)
+					time.Sleep(time.Duration(config.Default.Proxy.LockTimeout) * time.Minute)
 					link.Disable = false
 					log.Infof("Server [%s] enabled", dialableAddress)
 				}()
@@ -243,7 +247,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	s.servers = []*dns.Server{tcp, udp}
 
-	g, ctx := errgroup.WithContext(ctx) 
+	g, ctx := errgroup.WithContext(ctx)
 
 	go func() {
 		<-ctx.Done()
@@ -272,6 +276,7 @@ func (s *Server) Run(ctx context.Context) error {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 	log.Debugf("Question from %s: %q", inboundIP, q.Question[0])
+	// log.Infof("Question from %s: %q", inboundIP, q.Question[0])
 	m := s.getAnswer(q)
 	if m == nil {
 		dns.HandleFailed(w, q)
@@ -335,6 +340,29 @@ func (s *Server) isAvailableServers(servers []string) bool {
 	return false
 }
 
+func (s *Server) reserveTimerStart() {
+	if s.reserveTimer == nil {
+		s.reserveTimer = time.NewTimer(time.Duration(config.Default.Proxy.ReserveTimeout) * time.Minute)
+		go func() {
+			<-s.reserveTimer.C
+			s.status = false
+			s.reserveTimer = nil
+			log.Warning("RESERVE state time out")
+		}()
+	}
+}
+
+func (s *Server) reserveTimerStop() {
+	if s.reserveTimer != nil {
+		s.reserveTimer.Stop()
+		s.reserveTimer = nil
+	}
+}
+
+func (s *Server) Status() bool {
+	return s.status
+}
+
 func (s *Server) setServerState(ss ServerState) {
 	s.state = ss
 	s.createConnectors()
@@ -357,13 +385,16 @@ func (s *Server) VerifyState() {
 			return
 		}
 		s.setServerState(STATE_PROV)
+		s.reserveTimerStart()
 		log.Info("Proxy down to RESERVE")
 	case STATE_PROV:
 		if s.isAvailableServers(s.vpnServers) {
 			s.setServerState(STATE_VPN)
+			s.reserveTimerStop()
 			log.Info("Proxy up to VPN")
 		} else if s.isAvailableServers(s.directServers) {
 			s.setServerState(STATE_DIRECT)
+			s.reserveTimerStop()
 			log.Info("Proxy up to DIRECT")
 		}
 	default:
@@ -424,7 +455,7 @@ func (s *Server) getAnswer(q *dns.Msg) *dns.Msg {
 		}
 		m.Answer = append(m.Answer, line)
 
-		log.Debugf("BLOCKED QN: %s", question.Name)
+		log.Debugf("BLOCKED ON: %s", question.Name)
 
 		return m
 	}
@@ -506,7 +537,7 @@ func (s *Server) forwardMessageAndCacheResponse(q *dns.Msg) (m *dns.Msg) {
 		m = s.forwardMessageAndGetResponse(q)
 	}
 	if m == nil {
-		log.Infof("Giving up on %q after %d connection retries.", q.Question, connectionsPerUpstream)
+		log.Debugf("Giving up on %q after %d connection retries.", q.Question, connectionsPerUpstream)
 		return nil
 	}
 

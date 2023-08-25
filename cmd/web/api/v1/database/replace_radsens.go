@@ -34,7 +34,7 @@ func intToExtRadsens(c *gin.Context) error {
 
 	var radsens []entities.Radsens
 
-	body, err := kit.GetInt("/esp32/database/radsens")
+	body, err := kit.GetInt("/esp32/database/replace/radsens")
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func intToExtRadsens(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Radsens replased [%d] records", len(radsens))
+	log.Infof("Radsens replased [%d] records", len(radsens))
 
 	return nil
 }
@@ -58,7 +58,7 @@ func extToIntRadsens(c *gin.Context) error {
 
 	var radsens []entities.Radsens
 
-	body, err := kit.GetExt("/esp32/database/radsens")
+	body, err := kit.GetExt("/esp32/database/replace/radsens")
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func extToIntRadsens(c *gin.Context) error {
 		return err
 	}
 
-	log.Info("Radsens replased [%d] records", len(radsens))
+	log.Infof("Radsens replased [%d] records", len(radsens))
 
 	return nil
 }

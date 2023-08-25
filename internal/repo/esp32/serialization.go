@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-func toFloat(src interface{}) (float64, error) {
-	fs, ok := src.(string)
-	if !ok {
-		return 0, fmt.Errorf("convert interface to string: %v", src)
-	}
-	return strconv.ParseFloat(fs, 64)
-}
+// func toFloat(src interface{}) (float64, error) {
+// 	fs, ok := src.(string)
+// 	if !ok {
+// 		return 0, fmt.Errorf("convert interface to string: %v", src)
+// 	}
+// 	return strconv.ParseFloat(fs, 64)
+// }
 
 func toInt(src interface{}) (int, error) {
 	is, ok := src.(string)

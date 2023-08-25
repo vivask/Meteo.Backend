@@ -3,12 +3,24 @@ package repo
 import (
 	"fmt"
 	"meteo/internal/entities"
+	m "meteo/internal/entities/migration"
 	"meteo/internal/log"
 )
 
 const _GIT_USERS_ = "git_users"
 
+func (p databaseService) GetAllGitUsers() ([]entities.GitUsers, error) {
+	var users []entities.GitUsers
+	err := p.db.Preload("SshKeys").Find(&users).Error
+	if err != nil {
+		return nil, fmt.Errorf("error read git_users: %w", err)
+	}
+	return users, err
+}
+
 func (p databaseService) ReplaceGitUsers(readings []entities.GitUsers) error {
+	m.AutoSyncOff(_GIT_USERS_)
+	defer m.AutoSyncOn(_GIT_USERS_)
 
 	tx := p.db.Begin()
 

@@ -6,6 +6,7 @@ func (p sshclientAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	sshclient := router.Group("/sshclient")
 	sshclient.GET("/sshkeys", p.GetAllSshKeys)
 	sshclient.PUT("/sshkeys", p.AddSshKey)
+	sshclient.POST("/sshkeys", p.EditSshKey)
 	sshclient.DELETE("/sshkeys/:id", p.DelSshKey)
 	sshclient.GET("/gitusers", p.GetAllGitUsers)
 	sshclient.PUT("/gitusers", p.AddGitUser)

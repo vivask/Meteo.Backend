@@ -215,18 +215,19 @@ func updateList(lists []string) (*BlackList, []bool) {
 	for idx, v := range lists {
 		resp, err := http.Get(v)
 		if err != nil {
-			log.Infof("[black] Can't load: %s", v)
+			log.Errorf("[black] Can't load: %s", v)
+			log.Error(err)
 			continue
 		}
 
 		if resp.StatusCode != 200 {
-			log.Infof("[black] Status code of %s!= 200", v)
+			log.Errorf("[black] Status code of %s!= 200", v)
 			continue
 		}
 
 		data, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Infof("[black] Can't read body of %s", v)
+			log.Errorf("[black] Can't read body of %s", v)
 			continue
 		}
 
@@ -238,7 +239,7 @@ func updateList(lists []string) (*BlackList, []bool) {
 			log.Errorf("No access to block list: %s", v)
 		} else {
 			loaded[idx] = true
-			log.Debugf("Uploaded %d blocked hosts from: %s", cnt, v)
+			log.Infof("Uploaded %d blocked hosts from: %s", cnt, v)
 		}
 	}
 	return list, loaded

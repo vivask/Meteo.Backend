@@ -8,4 +8,5 @@ func (p webAPI) RegisterPublicAPIV1(router *gin.RouterGroup) {
 	web.GET("/health", p.GetHealth)
 	web.GET("/logging", p.GetLogging)
 	web.PUT("/logging", p.ClearLogging)
+	web.GET("/logging/empty", p.IsEmptyLog)
 }

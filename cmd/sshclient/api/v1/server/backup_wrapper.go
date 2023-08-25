@@ -104,7 +104,7 @@ func (p serverAPI) BackupReboot(c *gin.Context) {
 	port := config.Default.SshClient.Backup.Port
 	username := config.Default.SshClient.Backup.User
 
-	err := p.ServerShutdown(adderess, port, username, "systemctl reboot")
+	err := p.ServerShutdown(adderess, port, username, "sudo systemctl reboot")
 	if err != nil {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return
@@ -119,7 +119,7 @@ func (p serverAPI) BackupShutdown(c *gin.Context) {
 	port := config.Default.SshClient.Backup.Port
 	username := config.Default.SshClient.Backup.User
 
-	err := p.ServerShutdown(adderess, port, username, "poweroff")
+	err := p.ServerShutdown(adderess, port, username, "sudo poweroff")
 	if err != nil {
 		c.Error(errors.NewError(http.StatusInternalServerError, err.Error()))
 		return

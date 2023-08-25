@@ -14,6 +14,7 @@ var (
 	lockZe08ch2o = false
 	lockRadsens  = false
 	lockMics6814 = false
+	lockAht25    = false
 )
 
 func UnlockBmx280(ext bool) error {
@@ -174,4 +175,36 @@ func isLockedMics6814() bool {
 	mux.Lock()
 	defer mux.Unlock()
 	return lockMics6814
+}
+
+func UnlockAht25(ext bool) error {
+	if ext {
+		_, err := kit.PutExt("/esp32/database/unlock/aht25", nil)
+		if err != nil {
+			return fmt.Errorf("error PUT: %w", err)
+		}
+	}
+	mux.Lock()
+	lockAht25 = false
+	mux.Unlock()
+	return nil
+}
+
+func LockAht25(ext bool) error {
+	if ext {
+		_, err := kit.PutExt("/esp32/database/lock/aht25", nil)
+		if err != nil {
+			return fmt.Errorf("error PUT: %w", err)
+		}
+	}
+	mux.Lock()
+	lockAht25 = true
+	mux.Unlock()
+	return nil
+}
+
+func isLockedAht25() bool {
+	mux.Lock()
+	defer mux.Unlock()
+	return lockAht25
 }

@@ -52,7 +52,39 @@ type DatabaseService interface {
 	GetNotSyncRadsens() ([]entities.Radsens, error)
 	GetAllRadsens() ([]entities.Radsens, error)
 
+	GetAllAht25() ([]entities.Aht25, error)
+	GetNotSyncAht25() ([]entities.Aht25, error)
+	AddSyncAht25(data []entities.Aht25) error
+	SyncAht25() error
+	ReplaceAht25(readings []entities.Aht25) error
+
 	DropTables(tables []entities.SyncTables) error
+
+	GetAllGitUsers() ([]entities.GitUsers, error)
+	GetAllHomezones() ([]entities.Homezone, error)
+	GetAllJobs() ([]entities.Jobs, error)
+	GetAllRadcheck() ([]entities.Radcheck, error)
+	GetAllRadverified() ([]entities.Radverified, error)
+	GetAllSshHosts() ([]entities.SshHosts, error)
+	GetAllSshKeys() ([]entities.SshKeys, error)
+	GetAllTasks() ([]entities.Tasks, error)
+	GetAllToVpnAuto() ([]entities.ToVpnAuto, error)
+	GetAllToVpnIgnore() ([]entities.ToVpnIgnore, error)
+	GetAllToVpnManual() ([]entities.ToVpnManual, error)
+	GetAllUsers() ([]entities.User, error)
+
+	ReplaceSshKeys(readings []entities.SshKeys) error
+	ReplaceSshHosts(readings []entities.SshHosts) error
+	ReplaceGitUsers(readings []entities.GitUsers) error
+	ReplaceHomezone(readings []entities.Homezone) error
+	ReplaceToVpnManual(readings []entities.ToVpnManual) error
+	ReplaceToVpnAuto(readings []entities.ToVpnAuto) error
+	ReplaceToVpnIgnore(readings []entities.ToVpnIgnore) error
+	ReplaceTasks(readings []entities.Tasks) error
+	ReplaceJobs(readings []entities.Jobs) error
+	ReplaceRadcheck(readings []entities.Radcheck) error
+	ReplaceUser(readings []entities.User) error
+	ReplaceRadverified(readings []entities.Radverified) error
 }
 
 type databaseService struct {

@@ -24,4 +24,17 @@ func (p databaseAPI) RegisterAPIV1(router *gin.RouterGroup) {
 	database.PUT("replace/radsens/:direction", p.ReplaceRadsens)
 	database.PUT("replace/ze08ch2o/:direction", p.ReplaceZe08ch2o)
 	database.PUT("replace/ds18b20/:direction", p.ReplaceDs18b20)
+
+	database.PUT("replace/ssh_keys/:direction", p.ReplaceSshKeys)
+	database.PUT("replace/ssh_hosts/:direction", p.ReplaceSshHosts)
+	database.PUT("replace/git_users/:direction", p.ReplaceGitUsers)
+	database.PUT("replace/homezones/:direction", p.ReplaceHomezone)
+	database.PUT("replace/tovpn_manuals/:direction", p.ReplaceToVpnManual)
+	database.PUT("replace/tovpn_autos/:direction", p.ReplaceToVpnAuto)
+	database.PUT("replace/tovpn_ignores/:direction", p.ReplaceToVpnIgnore)
+	database.PUT("replace/tasks/:direction", p.ReplaceTasks)
+	database.PUT("replace/jobs/:direction", p.ReplaceJobs)
+	database.PUT("replace/radcheck/:direction", p.ReplaceRadcheck)
+	database.PUT("replace/radverified/:direction", p.ReplaceRadverified)
+	database.PUT("replace/users/:direction", p.ReplaceUser)
 }

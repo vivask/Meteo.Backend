@@ -218,12 +218,6 @@ func setLeader(v bool) {
 	m.Unlock()
 }
 
-func SetAliveRemote(v bool) {
-	m.Lock()
-	aliveRemote = v
-	m.Unlock()
-}
-
 func IsAliveRemote() bool {
 	m.Lock()
 	defer m.Unlock()

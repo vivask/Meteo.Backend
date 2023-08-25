@@ -19,14 +19,12 @@ func ListenUdpPort(ctx context.Context, address string, port uint) error {
 	defer conn.Close()
 
 	go func() {
+		buf := make([]byte, maxBufferSize)
 		for {
-			buf := make([]byte, maxBufferSize)
 			n, addr, err := conn.ReadFrom(buf)
 			if err != nil {
 				continue
 			}
-			//log.Debugf("udp server packet-received: bytes=%d from=%s", n, addr.String())
-
 			go echo(conn, addr, buf[:n])
 		}
 	}()
@@ -38,8 +36,5 @@ func ListenUdpPort(ctx context.Context, address string, port uint) error {
 }
 
 func echo(conn net.PacketConn, addr net.Addr, buf []byte) {
-	_, err := conn.WriteTo(buf, addr)
-	if err != nil && aliveRemote {
-		log.Debugf("UDP write error: %v", err)
-	}
+	conn.WriteTo(buf, addr)
 }
