@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"meteo/docs"
 	"meteo/internal/config"
 	entities "meteo/internal/entities/migration"
 	"meteo/internal/kit"
@@ -103,8 +102,6 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 
 	entities.AutoMigrate(db, enableAutomigrate)
 
-	setupDoc()
-
 	kit.InitClient()
 
 	const path = "./firmware"
@@ -195,14 +192,4 @@ func startWebServer(cmd *cobra.Command, agrs []string) {
 	// catching ctx.Done(). timeout of 2 seconds.
 	<-ctx.Done()
 	log.Infof("%s Server exiting", config.Default.Web.Title)
-}
-
-func setupDoc() {
-	// programmatically set swagger info
-	docs.SwaggerInfo.Title = "Meteo API"
-	docs.SwaggerInfo.Description = "This is meteo golang server."
-	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Default.Web.Listen, config.Default.Web.Port)
-	docs.SwaggerInfo.BasePath = config.Default.App.Api
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 }
