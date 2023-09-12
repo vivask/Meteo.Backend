@@ -1,6 +1,5 @@
 .vscode/settings.json
 *.db
 *.log
-radius
 secrets
-.env*
+
